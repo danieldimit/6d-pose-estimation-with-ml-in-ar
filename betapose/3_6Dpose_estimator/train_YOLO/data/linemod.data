@@ -1,0 +1,6 @@
+classes= 1
+train  = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/sixd_labeled/ape/train.txt
+valid  = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/sixd_labeled/ape/test.txt
+names = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/data/linemod.names
+backup = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/backup
+

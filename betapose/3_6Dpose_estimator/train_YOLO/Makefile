@@ -5,6 +5,7 @@ OPENCV=0
 AVX=0
 OPENMP=0
 LIBSO=0
+ZED_CAMERA=0
 
 # set GPU=1 and CUDNN=1 to speedup on GPU
 # set CUDNN_HALF=1 to further speedup 3 x times (Mixed-precision using Tensor Cores) on GPU Tesla V100, Titan V, DGX-2
@@ -24,7 +25,7 @@ OS := $(shell uname)
 # ARCH= -gencode arch=compute_70,code=[sm_70,compute_70]
 
 # GTX 1080, GTX 1070, GTX 1060, GTX 1050, GTX 1030, Titan Xp, Tesla P40, Tesla P4
-ARCH= -gencode arch=compute_61,code=sm_61 -gencode arch=compute_61,code=compute_61
+#ARCH= -gencode arch=compute_61,code=sm_61 -gencode arch=compute_61,code=compute_61
 
 # GP100/Tesla P100 � DGX-1
 # ARCH= -gencode arch=compute_60,code=sm_60

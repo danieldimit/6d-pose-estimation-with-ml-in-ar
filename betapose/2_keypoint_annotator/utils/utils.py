@@ -5,7 +5,7 @@ from tqdm import tqdm
 from scipy.linalg import expm, norm
 from matplotlib import pyplot as plt
 from IPython import embed #debugging
-import renderer
+import utils.renderer
 import random
 import copy
 

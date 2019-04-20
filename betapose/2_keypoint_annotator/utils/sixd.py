@@ -7,7 +7,7 @@ import cv2
 import yaml
 
 #from utils_recon.model import Model3D
-from model import Model3D
+from utils.model import Model3D
 ''' The following were copied over from the 6DB toolkit'''
 def load_yaml(path):
     with open(path, 'r') as f:

@@ -62,8 +62,10 @@ def load_bench(base_path):
 
 	# loading models, Linemod has 15 seqs, we use 13(except 3 and 7)
 	for ID in range(1,16):
-		name = 'obj_{:02d}'.format(ID)
-		bench.models['{:02d}'.format(ID)].load(os.path.join(base_path, 'models/' + name + '.ply'), scale=bench.scale_to_meters)
+		if (ID != 3 and ID != 7):
+			name = 'obj_{:02d}'.format(ID)
+			bench.models['{:02d}'.format(ID)].load(os.path.join(base_path, 'models/' + name + '.ply'),
+												   scale=bench.scale_to_meters)
 	print("Loading models finished!")
 
 	# loading and refine kp models
