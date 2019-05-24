@@ -12,11 +12,11 @@ def add_err(gt_pose, est_pose, model):
         rot = np.matmul(mat[:3, :3], points_3d.transpose())
         return rot.transpose() + mat[:3, 3]
     # print("Now showing model.vertices...")
-    # print(model.vertices)
+    # print(model.shape)
     v_A = transform_points(model, gt_pose)
     v_B = transform_points(model, est_pose)
     # print("Now showing transform_points...")
-    # print(v_A)
+    # print(v_A.shape)
     v_A = np.array([x for x in v_A])
     v_B = np.array([x for x in v_B])    
     return np.mean(np.linalg.norm(v_A - v_B, axis=1))
@@ -111,17 +111,19 @@ def projection_error_2d(gt_pose, est_pose, model, cam):
     gt_2d = np.matmul(np.matmul(cam, gt_pose), model.T)
     est_2d = np.matmul(np.matmul(cam, est_pose), model.T)
 
+
     gt_2d /= gt_2d[2, :]
     est_2d /= est_2d[2, :]
     gt_2d = gt_2d[:2,:].T
     est_2d = est_2d[:2,:].T
-    
-    # import matplotlib.pyplot as plt
-    # plt.figure()
-    # plt.scatter(gt_2d[:,0], gt_2d[:,1], s=1)
-    # plt.savefig('gt.png')
-    # plt.figure()
-    # plt.scatter(est_2d[:,0], est_2d[:,1], s=1)
-    # plt.savefig('pred.png')
+    print(gt_2d.shape)
+    print(est_2d.shape)
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.scatter(gt_2d[:,0], gt_2d[:,1], s=1)
+    plt.savefig('gt.png')
+    plt.figure()
+    plt.scatter(est_2d[:,0], est_2d[:,1], s=1)
+    plt.savefig('pred.png')
 
     return np.mean(np.linalg.norm(gt_2d - est_2d, axis=1))

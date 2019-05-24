@@ -54,7 +54,7 @@ def load_sixd_models(base_path, obj_id):
     # This function is used to load sixd benchmark info including camera, model and kp_model.
     print("Loading models and KP models...")
     bench = Benchmark()
-    bench.scale_to_meters = 0.001 # Unit in model is mm
+    bench.scale_to_meters = 1 # Unit in model is mm
     # You need to give camera info manually here.
     bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
     
@@ -86,9 +86,9 @@ def load_sixd_models(base_path, obj_id):
 if __name__ == "__main__":
     # Loading camera, model, kp_model information of SIXD benchmark datasets
     print ("Betapose begin running now.")
-    obj_id = 2
+    obj_id = 1
     print("Test seq", obj_id)
-    sixd_base = "/media/data_2/SIXD/hinterstoisser"
+    sixd_base = "../sixd_base"
     sixd_bench = load_sixd_models(sixd_base, obj_id)
     cam_K = sixd_bench.cam
     models = sixd_bench.models
@@ -224,6 +224,8 @@ if __name__ == "__main__":
         gt_bbox = ground_truths[2] # [xmin, ymin, w, h]
         gt_bbox[2] += gt_bbox[0]
         gt_bbox[3] += gt_bbox[1]
+        print('ground_truth bb')        
+        print(gt_bbox)
 
         pred_cam_R = f['cam_R']
         pred_cam_t = f['cam_t']
@@ -236,6 +238,10 @@ if __name__ == "__main__":
         
         pred_bbox = np.array(f['result'][0]['bbox']).tolist()
         iou_frame = iou(gt_bbox, pred_bbox)
+        print('pred_bbox bb') 
+        print(pred_bbox)
+        print('iou') 
+        print(iou_frame)
         ious.append(iou_frame)
         
         pred_pose[:3, :3] = pred_cam_R

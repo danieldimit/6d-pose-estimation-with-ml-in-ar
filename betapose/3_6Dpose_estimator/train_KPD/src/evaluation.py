@@ -6,7 +6,6 @@
 import torch
 import torch.nn as nn
 import torch.utils.data
-from predict.annot.coco_minival import Mscoco_minival
 from predict.p_poseNMS import pose_nms, write_json
 import numpy as np
 import opt

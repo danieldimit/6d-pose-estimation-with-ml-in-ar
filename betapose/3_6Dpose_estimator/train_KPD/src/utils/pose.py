@@ -116,7 +116,7 @@ def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dat
     setMask = torch.zeros(nJoints, outputResH, outputResW)
     # Draw Label
     if imgset == 'coco':
-        for i in range(nJoints_coco):
+        for i in range(nJoints_coco - 1):
             if part[i][0] > 0 and part[i][0] > upLeft[0] and part[i][1] > upLeft[1] \
                and part[i][0] < bottomRight[0] and part[i][1] < bottomRight[1]:
                 hm_part = transformBox(

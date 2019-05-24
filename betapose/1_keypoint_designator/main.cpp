@@ -47,7 +47,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr extract_sift(pcl::PointCloud<pcl::PointXYZ>:
   // the number of scales to compute within each octave
   const int n_scales_per_octave = 5;
   // the minimum contrast required for detection
-  const float min_contrast = 0.2f;
+  const float min_contrast = 0.05f;
 
   pcl::console::TicToc time;
   time.tic();

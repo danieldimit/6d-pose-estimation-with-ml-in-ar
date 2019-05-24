@@ -207,7 +207,7 @@ def write_results(prediction, confidence, num_classes, nms=True, nms_conf=0.4):
 
             # But we still have to filter other low confidence detection
             out = torch.cat(seq,1)
-            best_idx = np.argmax(out[:,5])
+            best_idx = torch.argmax(out[:,5])
             out = out[best_idx].view(1,-1)
 
             if not write:

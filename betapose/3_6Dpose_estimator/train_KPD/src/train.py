@@ -187,7 +187,7 @@ def main():
         #         optimizer, '../exp/{}/{}/optimizer.pkl'.format(opt.dataset, opt.expID))
 
         # if i > 0: # in step1
-        if i > 0 and i % 5 == 0: # in step2 and step3
+        if i > 0 and i % 20 == 0: # in step2 and step3
             loss, acc = valid(val_loader, m, criterion, optimizer, writer)
             torch.save(
                 m_dev.state_dict(), '../exp/{}/{}/model_{}.pkl'.format(opt.dataset, opt.expID, opt.epoch))

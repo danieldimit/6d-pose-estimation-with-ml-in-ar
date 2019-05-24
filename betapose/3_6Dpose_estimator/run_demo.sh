@@ -1,1 +1,1 @@
-CUDA_VISIBLE_DEVICES=1 python3 betapose_evaluate.py --nClasses 50 --indir /media/data_2/COCO_SIXD/linemod_test_50kp_11_3/02/eval --outdir examples/seq2 --sp --profile
+CUDA_VISIBLE_DEVICES=0 python betapose_evaluate.py --nThreads 1 --nClasses 50 --indir ../output01/eval --outdir ../outputEval/ --sp --profile

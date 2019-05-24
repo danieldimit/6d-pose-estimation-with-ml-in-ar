@@ -1,0 +1,8 @@
+betaposeFormat
+__pycache__
+models/yolo
+exp/
+tensorboard
+.idea
+train_YOLO/backup/
+betapose/1_keypoint_designator/build
