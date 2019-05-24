@@ -1,5 +1,0 @@
-valid  = ../LINEMOD/ape/test_occlusion.txt
-mesh = ../LINEMOD/ape/ape.ply
-backup = backup_multi
-name = ape
-diam = 0.103
