@@ -4,4 +4,4 @@ backup = backup/psp
 mesh = sspdFormat/psp.ply
 tr_range = sspdFormat/training_range.txt
 name = psp
-diam = 16.67268
+diam = 0.167

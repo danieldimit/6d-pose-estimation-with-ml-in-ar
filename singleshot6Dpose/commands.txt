@@ -1,4 +1,4 @@
-python train.py cfg/psp.data cfg/yolo-pose.cfg cfg/darknet19_448.conv.23
+python train.py cfg/psp.data cfg/yolo-pose.cfg backup/benchvise/init.weights
 python train.py cfg/ape.data cfg/yolo-pose.cfg cfg/darknet19_448.conv.23
 
 

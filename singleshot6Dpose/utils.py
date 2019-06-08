@@ -31,8 +31,10 @@ def calcAngularDistance(gt_rot, pr_rot):
 
 def get_camera_intrinsic():
     K = np.zeros((3, 3), dtype='float64')
-    K[0, 0], K[0, 2] = 572.4114, 325.2611
-    K[1, 1], K[1, 2] = 573.5704, 242.0489
+    #K[0, 0], K[0, 2] = 572.4114, 325.2611
+    #K[1, 1], K[1, 2] = 573.5704, 242.0489
+    K[0, 0], K[0, 2] = 320, 320
+    K[1, 1], K[1, 2] = 320, 240
     K[2, 2] = 1.
     return K
 
