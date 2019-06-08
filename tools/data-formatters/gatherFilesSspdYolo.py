@@ -19,6 +19,7 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent():
 		os.makedirs('../sspdFormat/maskPolyColor')
 		os.makedirs('../sspdFormat/labelsJSON')
 		os.makedirs('../sspdFormat/labels')
+		os.makedirs('../sspdFormat/mask')
 
 	allSubdirs = [x[0] for x in os.walk('./')]
 	counter = 0
@@ -27,10 +28,10 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent():
 	for dir in allSubdirs:
 		for file in os.listdir(dir):
 			if file.endswith(".json") and not file.endswith("settings.json"):
-				#shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/labelsJSON', format(counterJson, '06') + '.json'))
+				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/labelsJSON', format(counterJson, '06') + '.json'))
 				counterJson += 1
 			if file.endswith(".png") and not file.endswith("cs.png") and not file.endswith("depth.png") and not file.endswith("is.png"):
-				#shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/JPEGImages', format(counter, '06') + '.png'))
+				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/JPEGImages', format(counter, '06') + '.png'))
 				counter += 1
 			if file.endswith("cs.png"):
 				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/maskPolyColor', format(counter, '06') + '.cs.png'))
@@ -51,29 +52,40 @@ def createLabelContent():
 					c_y = obj['projected_cuboid_centroid'][1] / imageHeight
 
 					if (c_x <= 1 and c_x >= 0 and c_y <= 1 and c_y >= 0):
-						bb_x1 = obj['projected_cuboid'][0][0] / imageWidth
-						bb_y1 = obj['projected_cuboid'][0][1] / imageHeight
+						bb_x1 = obj['projected_cuboid'][7][0] / imageWidth
+						bb_y1 = obj['projected_cuboid'][7][1] / imageHeight
 
-						bb_x2 = obj['projected_cuboid'][1][0] / imageWidth
-						bb_y2 = obj['projected_cuboid'][1][1] / imageHeight
+						bb_x2 = obj['projected_cuboid'][4][0] / imageWidth
+						bb_y2 = obj['projected_cuboid'][4][1] / imageHeight
 
-						bb_x3 = obj['projected_cuboid'][2][0] / imageWidth
-						bb_y3 = obj['projected_cuboid'][2][1] / imageHeight
+						bb_x3 = obj['projected_cuboid'][6][0] / imageWidth
+						bb_y3 = obj['projected_cuboid'][6][1] / imageHeight
 
-						bb_x4 = obj['projected_cuboid'][3][0] / imageWidth
-						bb_y4 = obj['projected_cuboid'][3][1] / imageHeight
+						bb_x4 = obj['projected_cuboid'][5][0] / imageWidth
+						bb_y4 = obj['projected_cuboid'][5][1] / imageHeight
 
-						bb_x5 = obj['projected_cuboid'][4][0] / imageWidth
-						bb_y5 = obj['projected_cuboid'][4][1] / imageHeight
 
-						bb_x6 = obj['projected_cuboid'][5][0] / imageWidth
-						bb_y6 = obj['projected_cuboid'][5][1] / imageHeight
 
-						bb_x7 = obj['projected_cuboid'][6][0] / imageWidth
-						bb_y7 = obj['projected_cuboid'][6][1] / imageHeight
 
-						bb_x8 = obj['projected_cuboid'][7][0] / imageWidth
-						bb_y8 = obj['projected_cuboid'][7][1] / imageHeight
+
+
+
+						bb_x5 = obj['projected_cuboid'][3][0] / imageWidth
+						bb_y5 = obj['projected_cuboid'][3][1] / imageHeight
+
+						bb_x6 = obj['projected_cuboid'][0][0] / imageWidth
+						bb_y6 = obj['projected_cuboid'][0][1] / imageHeight
+
+						bb_x7 = obj['projected_cuboid'][2][0] / imageWidth
+						bb_y7 = obj['projected_cuboid'][2][1] / imageHeight
+
+						bb_x8 = obj['projected_cuboid'][1][0] / imageWidth
+						bb_y8 = obj['projected_cuboid'][1][1] / imageHeight
+
+
+
+
+						
 
 						range_x = extractRange(np.array([bb_x1,bb_x2,bb_x3,bb_x4,bb_x5,bb_x6,bb_x7,bb_x8]))
 						range_y = extractRange(np.array([bb_y1,bb_y2,bb_y3,bb_y4,bb_y5,bb_y6,bb_y7,bb_y8]))
@@ -231,8 +243,8 @@ def cleanUselessFoldersBetapose():
 	shutil.rmtree('../betaposeFormat/labelsJSON/')
 
 def cleanUselessFoldersSSPD():
-	shutil.rmtree('../betaposeFormat/maskPolyColor/')
-	shutil.rmtree('../betaposeFormat/labelsJSON/')
+	shutil.rmtree('../sspdFormat/maskPolyColor/')
+	shutil.rmtree('../sspdFormat/labelsJSON/')
 
 
 
@@ -258,4 +270,4 @@ def reformatForYoloAndBetapose():
 	cleanUselessFoldersBetapose()
 	os.rename('../betaposeFormat/labelsConverted/', '../betaposeFormat/labels/')
 
-createTestAndTrainFilesReduced(len(os.listdir('../sspdFormat/labels')), 750)
+reformatForSSPD()
