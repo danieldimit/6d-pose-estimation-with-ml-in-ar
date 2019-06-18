@@ -30,9 +30,10 @@ import struct
 import sys
 import time
 import wave
+import projector
 
 dir_file = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, os.path.join(dir_file, "../.."))
+sys.path.insert(0, os.path.join(dir_file, "../../.."))
 import gabriel3
 import gabriel3.proxy
 LOG = gabriel3.logging.getLogger(__name__)
@@ -52,6 +53,7 @@ def display_image(display_name, img, wait_time = -1, is_resize = True, resize_me
     if is_resize:
         img_shape = img.shape
         height = img_shape[0]; width = img_shape[1]
+        img = projector.getBBOfPlyObject(img)
         if resize_max > 0:
             if height > width:
                 img_display = cv2.resize(img, (int(resize_max * width / height), resize_max), interpolation = cv2.INTER_NEAREST)

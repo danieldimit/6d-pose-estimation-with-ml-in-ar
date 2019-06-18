@@ -1,0 +1,6 @@
+gabriel
+python gabriel-control -n wlp3s0 -l
+python gabriel-ucomm -n wlp3s0
+
+sspd
+python3 gabriel-proxy-dummy3.py -s 0.0.0.0:8021
