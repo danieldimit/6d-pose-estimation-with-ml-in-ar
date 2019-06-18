@@ -1,0 +1,7 @@
+train  = sspdFormat/train.txt
+valid  = sspdFormat/test.txt
+backup = backup/psp
+mesh = sspdFormat/psp.ply
+tr_range = sspdFormat/training_range.txt
+name = psp
+diam = 0.167

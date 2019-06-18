@@ -1,0 +1,4 @@
+backup = backup/ape
+mesh = ape.ply
+name = ape
+diam = 0.103
