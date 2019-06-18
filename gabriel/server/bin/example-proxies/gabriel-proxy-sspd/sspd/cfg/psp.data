@@ -1,7 +1,3 @@
-train  = sspdFormat/train.txt
-valid  = sspdFormat/test.txt
-backup = backup/psp
-mesh = sspdFormat/psp.ply
-tr_range = sspdFormat/training_range.txt
+mesh = sspd/3d_models/psp.ply
 name = psp
 diam = 0.167

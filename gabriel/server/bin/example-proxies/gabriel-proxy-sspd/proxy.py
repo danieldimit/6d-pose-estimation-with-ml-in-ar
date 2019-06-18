@@ -30,7 +30,6 @@ import struct
 import sys
 import time
 import wave
-import projector
 import sspd.evaluate_single_image
 
 dir_file = os.path.dirname(os.path.realpath(__file__))
@@ -114,9 +113,6 @@ class DummyAudioApp(gabriel3.proxy.CognitiveProcessThread):
 
 if __name__ == "__main__":
     import sys
-
-    print(sys.argv[1])
-
     if (len(sys.argv) == 5):
         datacfg_file = sys.argv[1]  # data file
         cfgfile_file = sys.argv[2]  # yolo network file
@@ -153,26 +149,6 @@ if __name__ == "__main__":
         video_app.start()
         video_app.isDaemon = True
 
-        ## acc receiving and processing
-        acc_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
-        acc_streaming = gabriel3.proxy.SensorReceiveClient((acc_ip, acc_port), acc_queue)
-        acc_streaming.start()
-        acc_streaming.isDaemon = True
-
-        acc_app = DummyAccApp(acc_queue, result_queue, engine_id="Dummy_acc")
-        acc_app.start()
-        acc_app.isDaemon = True
-
-        # audio receiving and processing
-        audio_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
-        audio_streaming = gabriel3.proxy.SensorReceiveClient((audio_ip, audio_port), audio_queue)
-        audio_streaming.start()
-        audio_streaming.isDaemon = True
-
-        audio_app = DummyAudioApp(audio_queue, result_queue, engine_id="Dummy_audio")
-        audio_app.start()
-        audio_app.isDaemon = True
-
         # result pub/sub
         result_pub = gabriel3.proxy.ResultPublishClient((ucomm_ip, ucomm_port), result_queue)
         result_pub.start()
@@ -190,17 +166,9 @@ if __name__ == "__main__":
                 video_streaming.terminate()
             if video_app is not None:
                 video_app.terminate()
-            if acc_streaming is not None:
-                acc_streaming.terminate()
-            if acc_app is not None:
-                acc_app.terminate()
-            if audio_streaming is not None:
-                audio_streaming.terminate()
-            if audio_app is not None:
-                audio_app.terminate()
             result_pub.terminate()
 
     else:
         print('Usage:')
-        print('python evaluateSingleImage.py datacfg cfgfile weightfile imagefile')
+        print('python evaluateSingleImage.py datacfg cfgfile weightfile garbiel-control-server-address')
 

@@ -3,4 +3,4 @@ python gabriel-control -n wlp3s0 -l
 python gabriel-ucomm -n wlp3s0
 
 sspd
-python3 proxy.py ./sspd/cfg/ape.data ./sspd/cfg/yolo-pose.cfg ./sspd/backup/ape/model_backup.weights 0.0.0.0:8021
+python proxy.py ./sspd/cfg/ape.data ./sspd/cfg/yolo-pose.cfg ./sspd/backup/ape/model_backup.weights 0.0.0.0:8021

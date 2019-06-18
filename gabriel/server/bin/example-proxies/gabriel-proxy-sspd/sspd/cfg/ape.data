@@ -1,3 +1,3 @@
-mesh = sspd/ape.ply
+mesh = sspd/3d_models/ape.ply
 name = ape
 diam = 0.103

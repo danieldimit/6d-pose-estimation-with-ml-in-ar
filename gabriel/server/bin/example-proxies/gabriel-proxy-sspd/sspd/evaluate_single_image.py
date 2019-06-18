@@ -12,8 +12,6 @@ from PIL import Image
 import sys
 
 # import app libraries
-dir_file = os.path.dirname(os.path.realpath(__file__))
-print(dir_file)
 from .darknet import Darknet
 from .utils import *
 from .MeshPly import MeshPly
