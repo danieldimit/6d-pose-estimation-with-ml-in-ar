@@ -1,5 +1,5 @@
 import torch
-from utils import convert2cpu
+from .utils import convert2cpu
 
 def parse_cfg(cfgfile):
     blocks = []

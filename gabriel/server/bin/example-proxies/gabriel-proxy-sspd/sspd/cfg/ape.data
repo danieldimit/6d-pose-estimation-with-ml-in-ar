@@ -1,4 +1,3 @@
-backup = backup/ape
-mesh = ape.ply
+mesh = sspd/ape.ply
 name = ape
 diam = 0.103

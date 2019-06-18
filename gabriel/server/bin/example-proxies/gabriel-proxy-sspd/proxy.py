@@ -31,6 +31,7 @@ import sys
 import time
 import wave
 import projector
+import sspd.evaluate_single_image
 
 dir_file = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(dir_file, "../../.."))
@@ -53,7 +54,7 @@ def display_image(display_name, img, wait_time = -1, is_resize = True, resize_me
     if is_resize:
         img_shape = img.shape
         height = img_shape[0]; width = img_shape[1]
-        img = projector.getBBOfPlyObject(img)
+        img = sspd.evaluate_single_image.evaluate_img(img)
         if resize_max > 0:
             if height > width:
                 img_display = cv2.resize(img, (int(resize_max * width / height), resize_max), interpolation = cv2.INTER_NEAREST)
@@ -112,80 +113,94 @@ class DummyAudioApp(gabriel3.proxy.CognitiveProcessThread):
 
 
 if __name__ == "__main__":
-    print('AJAAAAA')
-    settings = gabriel3.util.process_command_line(sys.argv[1:])
+    import sys
 
-    ip_addr, port = gabriel3.network.get_registry_server_address(settings.address)
-    service_list = gabriel3.network.get_service_list(ip_addr, port)
-    print("Gabriel Server :")
-    print(pprint.pformat(service_list))
+    print(sys.argv[1])
 
-    video_ip = service_list.get(gabriel3.ServiceMeta.VIDEO_TCP_STREAMING_IP)
-    video_port = service_list.get(gabriel3.ServiceMeta.VIDEO_TCP_STREAMING_PORT)
-    acc_ip = service_list.get(gabriel3.ServiceMeta.ACC_TCP_STREAMING_IP)
-    acc_port = service_list.get(gabriel3.ServiceMeta.ACC_TCP_STREAMING_PORT)
-    audio_ip = service_list.get(gabriel3.ServiceMeta.AUDIO_TCP_STREAMING_IP)
-    audio_port = service_list.get(gabriel3.ServiceMeta.AUDIO_TCP_STREAMING_PORT)
-    ucomm_ip = service_list.get(gabriel3.ServiceMeta.UCOMM_SERVER_IP)
-    ucomm_port = service_list.get(gabriel3.ServiceMeta.UCOMM_SERVER_PORT)
+    if (len(sys.argv) == 5):
+        datacfg_file = sys.argv[1]  # data file
+        cfgfile_file = sys.argv[2]  # yolo network file
+        weightfile_file = sys.argv[3]  # weightd file
+        sspd.evaluate_single_image.initialize_network(datacfg_file, cfgfile_file, weightfile_file)
 
-    # this queue is shared by multiple sensor processing threads
-    result_queue = multiprocessing.Queue()
+        #settings = gabriel3.util.process_command_line(sys.argv[1:])
+        settings = sys.argv[4]
+        ip_addr, port = gabriel3.network.get_registry_server_address(settings)
+        service_list = gabriel3.network.get_service_list(ip_addr, port)
+        print("Gabriel Server :")
+        print(pprint.pformat(service_list))
 
-    # image receiving and processing
-    image_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
-    print("TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
-    video_streaming = gabriel3.proxy.SensorReceiveClient((video_ip, video_port), image_queue)
-    video_streaming.start()
-    video_streaming.isDaemon = True
+        video_ip = service_list.get(gabriel3.ServiceMeta.VIDEO_TCP_STREAMING_IP)
+        video_port = service_list.get(gabriel3.ServiceMeta.VIDEO_TCP_STREAMING_PORT)
+        acc_ip = service_list.get(gabriel3.ServiceMeta.ACC_TCP_STREAMING_IP)
+        acc_port = service_list.get(gabriel3.ServiceMeta.ACC_TCP_STREAMING_PORT)
+        audio_ip = service_list.get(gabriel3.ServiceMeta.AUDIO_TCP_STREAMING_IP)
+        audio_port = service_list.get(gabriel3.ServiceMeta.AUDIO_TCP_STREAMING_PORT)
+        ucomm_ip = service_list.get(gabriel3.ServiceMeta.UCOMM_SERVER_IP)
+        ucomm_port = service_list.get(gabriel3.ServiceMeta.UCOMM_SERVER_PORT)
 
-    video_app = DummyVideoApp(image_queue, result_queue, engine_id = "Dummy_video")
-    video_app.start()
-    video_app.isDaemon = True
+        # this queue is shared by multiple sensor processing threads
+        result_queue = multiprocessing.Queue()
 
-    ## acc receiving and processing
-    acc_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
-    acc_streaming = gabriel3.proxy.SensorReceiveClient((acc_ip, acc_port), acc_queue)
-    acc_streaming.start()
-    acc_streaming.isDaemon = True
+        # image receiving and processing
+        image_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
+        print("TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
+        video_streaming = gabriel3.proxy.SensorReceiveClient((video_ip, video_port), image_queue)
+        video_streaming.start()
+        video_streaming.isDaemon = True
 
-    acc_app = DummyAccApp(acc_queue, result_queue, engine_id = "Dummy_acc")
-    acc_app.start()
-    acc_app.isDaemon = True
+        video_app = DummyVideoApp(image_queue, result_queue, engine_id="Dummy_video")
+        video_app.start()
+        video_app.isDaemon = True
 
-    # audio receiving and processing
-    audio_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
-    audio_streaming = gabriel3.proxy.SensorReceiveClient((audio_ip, audio_port), audio_queue)
-    audio_streaming.start()
-    audio_streaming.isDaemon = True
+        ## acc receiving and processing
+        acc_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
+        acc_streaming = gabriel3.proxy.SensorReceiveClient((acc_ip, acc_port), acc_queue)
+        acc_streaming.start()
+        acc_streaming.isDaemon = True
 
-    audio_app = DummyAudioApp(audio_queue, result_queue, engine_id = "Dummy_audio")
-    audio_app.start()
-    audio_app.isDaemon = True
+        acc_app = DummyAccApp(acc_queue, result_queue, engine_id="Dummy_acc")
+        acc_app.start()
+        acc_app.isDaemon = True
 
-    # result pub/sub
-    result_pub = gabriel3.proxy.ResultPublishClient((ucomm_ip, ucomm_port), result_queue)
-    result_pub.start()
-    result_pub.isDaemon = True
+        # audio receiving and processing
+        audio_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
+        audio_streaming = gabriel3.proxy.SensorReceiveClient((audio_ip, audio_port), audio_queue)
+        audio_streaming.start()
+        audio_streaming.isDaemon = True
 
-    try:
-        while True:
-            time.sleep(1)
-    except Exception as e:
-        pass
-    except KeyboardInterrupt as e:
-        LOG.info("user exits\n")
-    finally:
-        if video_streaming is not None:
-            video_streaming.terminate()
-        if video_app is not None:
-            video_app.terminate()
-        if acc_streaming is not None:
-            acc_streaming.terminate()
-        if acc_app is not None:
-            acc_app.terminate()
-        if audio_streaming is not None:
-            audio_streaming.terminate()
-        if audio_app is not None:
-            audio_app.terminate()
-        result_pub.terminate()
+        audio_app = DummyAudioApp(audio_queue, result_queue, engine_id="Dummy_audio")
+        audio_app.start()
+        audio_app.isDaemon = True
+
+        # result pub/sub
+        result_pub = gabriel3.proxy.ResultPublishClient((ucomm_ip, ucomm_port), result_queue)
+        result_pub.start()
+        result_pub.isDaemon = True
+
+        try:
+            while True:
+                time.sleep(1)
+        except Exception as e:
+            pass
+        except KeyboardInterrupt as e:
+            LOG.info("user exits\n")
+        finally:
+            if video_streaming is not None:
+                video_streaming.terminate()
+            if video_app is not None:
+                video_app.terminate()
+            if acc_streaming is not None:
+                acc_streaming.terminate()
+            if acc_app is not None:
+                acc_app.terminate()
+            if audio_streaming is not None:
+                audio_streaming.terminate()
+            if audio_app is not None:
+                audio_app.terminate()
+            result_pub.terminate()
+
+    else:
+        print('Usage:')
+        print('python evaluateSingleImage.py datacfg cfgfile weightfile imagefile')
+

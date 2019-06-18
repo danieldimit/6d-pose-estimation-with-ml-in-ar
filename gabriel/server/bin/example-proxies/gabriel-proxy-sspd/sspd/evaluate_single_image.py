@@ -9,47 +9,30 @@ import torch
 from torch.autograd import Variable
 from torchvision import transforms
 from PIL import Image
+import sys
 
 # import app libraries
-from darknet import Darknet
-from utils import *
-from MeshPly import MeshPly
+dir_file = os.path.dirname(os.path.realpath(__file__))
+print(dir_file)
+from .darknet import Darknet
+from .utils import *
+from .MeshPly import MeshPly
 
-
-class Line():
-    def __init__(self, p1, p2):
-
-        # tilt
-        if ((p2[0] - p1[0]) == 0.0):
-            self.m = "NaN"  # vertical line
-        else:
-            self.m = (p2[1] - p1[1]) / (p2[0] - p1[0])
-
-        # intercept
-        if (self.m == "NaN"):
-            self.b = "NaN"
-        else:
-            self.b = -1.0 * self.m * p1[0] + p1[1]
-
-        self.p = p1  # store one sample
-
-    def eval(self, x):
-        # TODO verify if line is vertical
-        return (x * self.m + self.b)
-
-
-def find_intersection(l1, l2):
-    x = (l2.b - l1.b) / (l1.m - l2.m)  # x coord of intersection point
-    y = l1.eval(x)  # y coord of intersection point
-    return x, y
-
+model = None
+internal_calibration = None
+corners3D = None
+test_width = 608  # define test image size
+test_height = 608
+conf_thresh = 0.1
+num_classes = 1
 
 # estimate bounding box
 # @torch.no_grad
-def test(datacfg, cfgfile, weightfile, imgfile):
+def initialize_network(datacfg, cfgfile, weightfile):
     # ******************************************#
     #           PARAMETERS PREPARATION          #
     # ******************************************#
+    global model, corners3D, internal_calibration
 
     # parse configuration files
     options = read_data_cfg(datacfg)
@@ -59,15 +42,12 @@ def test(datacfg, cfgfile, weightfile, imgfile):
     # Parameters for the network
     seed = int(time.time())
     gpus = '0'  # define gpus to use
-    test_width = 608  # define test image size
-    test_height = 608
     torch.manual_seed(seed)  # seed torch random
     use_cuda = True
     if use_cuda:
         os.environ['CUDA_VISIBLE_DEVICES'] = gpus
         torch.cuda.manual_seed(seed)  # seed cuda random
-    conf_thresh = 0.1
-    num_classes = 1
+
 
     # Read object 3D model, get 3D Bounding box corners
     mesh = MeshPly(meshname)
@@ -103,13 +83,24 @@ def test(datacfg, cfgfile, weightfile, imgfile):
     model.cuda()
     model.eval()
 
+
+# estimate bounding box
+# @torch.no_grad
+def evaluate_img(img):
+    global model, test_height, test_width, conf_thresh, num_classes
+
+
+    # Reload Original img
+    imgCp = img.copy()
     # ******************************************#
     #   INPUT IMAGE PREPARATION FOR NN          #
     # ******************************************#
 
     # Now prepare image: convert to RGB, resize, transform to Tensor
     # use cuda,
-    img = Image.open(imgfile).convert('RGB')
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(img)
+    #img = Image.open(imgfile).convert('RGB')
     ori_size = img.size  # store original size
     img = img.resize((test_width, test_height))
     t1 = time.time()
@@ -147,8 +138,9 @@ def test(datacfg, cfgfile, weightfile, imgfile):
             best_conf_est = boxes[j][18]
             best_box_index = j
     # print("Best box is: {} and 2D prediction is {}".format(best_box_index,box_pr))
-    # print("Confidence is: {}".format(best_conf_est))
-    print(best_conf_est.item(), type(best_conf_est.item()))
+    print("Confidence is: {}".format(best_conf_est))
+    if (best_conf_est < conf_thresh):
+        return imgCp
 
     # Denormalize the corner predictions
     # This are the predicted 2D points with which a bounding cube can be drawn
@@ -181,20 +173,14 @@ def test(datacfg, cfgfile, weightfile, imgfile):
     #   DISPLAY IMAGE WITH BOUNDING CUBE        #
     # ******************************************#
 
-    # Reload Original img
-    img = cv2.imread(imgfile)
-
-    # create a window to display image
-    wname = "Prediction"
-    cv2.namedWindow(wname)
     # draw each predicted 2D point
     for i, (x, y) in enumerate(corners2D_pr):
         # get colors to draw the lines
         col1 = 28 * i
         col2 = 255 - (28 * i)
         col3 = np.random.randint(0, 256)
-        cv2.circle(img, (x, y), 3, (col1, col2, col3), -1)
-        cv2.putText(img, str(i), (int(x) + 5, int(y) + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (col1, col2, col3), 1)
+        cv2.circle(imgCp, (x, y), 3, (col1, col2, col3), -1)
+        cv2.putText(imgCp, str(i), (int(x) + 5, int(y) + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (col1, col2, col3), 1)
 
     # Get each predicted point and the centroid
     p1 = corners2D_pr[1]
@@ -210,49 +196,32 @@ def test(datacfg, cfgfile, weightfile, imgfile):
     # Draw cube lines around detected object
     # draw front face
     line_point = 2
-    cv2.line(img, (p1[0], p1[1]), (p2[0], p2[1]), (0, 255, 0), line_point)
-    cv2.line(img, (p2[0], p2[1]), (p4[0], p4[1]), (0, 255, 0), line_point)
-    cv2.line(img, (p4[0], p4[1]), (p3[0], p3[1]), (0, 255, 0), line_point)
-    cv2.line(img, (p3[0], p3[1]), (p1[0], p1[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p1[0], p1[1]), (p2[0], p2[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p2[0], p2[1]), (p4[0], p4[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p4[0], p4[1]), (p3[0], p3[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p3[0], p3[1]), (p1[0], p1[1]), (0, 255, 0), line_point)
 
     # draw back face
-    cv2.line(img, (p5[0], p5[1]), (p6[0], p6[1]), (0, 255, 0), line_point)
-    cv2.line(img, (p7[0], p7[1]), (p8[0], p8[1]), (0, 255, 0), line_point)
-    cv2.line(img, (p6[0], p6[1]), (p8[0], p8[1]), (0, 255, 0), line_point)
-    cv2.line(img, (p5[0], p5[1]), (p7[0], p7[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p5[0], p5[1]), (p6[0], p6[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p7[0], p7[1]), (p8[0], p8[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p6[0], p6[1]), (p8[0], p8[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p5[0], p5[1]), (p7[0], p7[1]), (0, 255, 0), line_point)
 
     # draw right face
-    cv2.line(img, (p2[0], p2[1]), (p6[0], p6[1]), (0, 255, 0), line_point)
-    cv2.line(img, (p1[0], p1[1]), (p5[0], p5[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p2[0], p2[1]), (p6[0], p6[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p1[0], p1[1]), (p5[0], p5[1]), (0, 255, 0), line_point)
 
     # draw left face
-    cv2.line(img, (p3[0], p3[1]), (p7[0], p7[1]), (0, 255, 0), line_point)
-    cv2.line(img, (p4[0], p4[1]), (p8[0], p8[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p3[0], p3[1]), (p7[0], p7[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p4[0], p4[1]), (p8[0], p8[1]), (0, 255, 0), line_point)
 
+    # print("Rotation: {}".format(R_pr))
+    # print("Translation: {}".format(t_pr))
+    # print(" Predict time: {}".format(t2 - t1))
+    # print(" 2D Points extraction time: {}".format(t3 - t2))
+    # print(" Pose calculation time: {}:".format(t4 - t3))
+    # print(" Total time: {}".format(t4 - t1))
+    # print("Press any key to close.")
 
-    # Show the image and wait key press
-    cv2.imshow(wname, img)
-    cv2.waitKey()
-
-    print("Rotation: {}".format(R_pr))
-    print("Translation: {}".format(t_pr))
-    print(" Predict time: {}".format(t2 - t1))
-    print(" 2D Points extraction time: {}".format(t3 - t2))
-    print(" Pose calculation time: {}:".format(t4 - t3))
-    print(" Total time: {}".format(t4 - t1))
-    print("Press any key to close.")
-
-
-if __name__ == '__main__':
-    import sys
-
-    if (len(sys.argv) == 5):
-        datacfg_file = sys.argv[1]  # data file
-        cfgfile_file = sys.argv[2]  # yolo network file
-        weightfile_file = sys.argv[3]  # weightd file
-        imgfile_file = sys.argv[4]  # image file
-        test(datacfg_file, cfgfile_file, weightfile_file, imgfile_file)
-    else:
-        print('Usage:')
-        print('python evaluateSingleImage.py datacfg cfgfile weightfile imagefile')
+    return imgCp
         
