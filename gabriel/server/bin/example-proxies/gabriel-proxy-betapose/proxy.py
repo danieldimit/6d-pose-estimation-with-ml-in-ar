@@ -84,8 +84,7 @@ class DummyVideoApp(gabriel3.proxy.CognitiveProcessThread):
         img = fix_image_ratio(raw2cv_image(data), resize_max = 640)
         eval_res = sspd.evaluate_single_image.evaluate_img(img)
         display_image('input', eval_res[0], wait_time = 1)
-        return json.dumps({'center': str(eval_res[1]), 'bb': str(eval_res[2]),
-                           'R': str(eval_res[3]), 't': str(eval_res[4])})
+        return json.dumps({'center': str(eval_res[1]), 'bb': str(eval_res[2])})
 
 
 if __name__ == "__main__":

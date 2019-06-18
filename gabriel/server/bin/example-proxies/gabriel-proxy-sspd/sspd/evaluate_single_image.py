@@ -138,7 +138,7 @@ def evaluate_img(img):
     # print("Best box is: {} and 2D prediction is {}".format(best_box_index,box_pr))
     print("Confidence is: {}".format(best_conf_est))
     if (best_conf_est < conf_thresh):
-        return imgCp
+        return [imgCp, [], [], [], []]
 
     # Denormalize the corner predictions
     # This are the predicted 2D points with which a bounding cube can be drawn
@@ -220,6 +220,8 @@ def evaluate_img(img):
     # print(" Pose calculation time: {}:".format(t4 - t3))
     # print(" Total time: {}".format(t4 - t1))
     # print("Press any key to close.")
-
-    return imgCp
+    #
+    return [imgCp, center.tolist() ,
+            [p2.tolist(), p3.tolist(), p4.tolist(), p5.tolist(), p6.tolist(), p7.tolist(), p8.tolist()],
+            R_pr.tolist(), t_pr.tolist()]
         
