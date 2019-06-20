@@ -13,6 +13,7 @@ def extractRange(xArr):
 	return np.max(xArr) - np.min(xArr)
 
 def createJPEGImagesAndLabelsJSONFoldersAndContent():
+	print('copying pics and labels')
 	if not os.path.exists('../sspdFormat'):
 		os.makedirs('../sspdFormat')
 		os.makedirs('../sspdFormat/JPEGImages')
@@ -38,6 +39,7 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent():
 				counterCs += 1
 
 def createLabelContent():
+	print('creating labels and deleting pics where the obj is partly outside of frame')
 	allSubdirs = [x[0] for x in os.walk('../sspdFormat/labelsJSON')]
 	counter = 0
 	createdCounter = 0
@@ -51,6 +53,16 @@ def createLabelContent():
 					c_x = obj['projected_cuboid_centroid'][0] / imageWidth
 					c_y = obj['projected_cuboid_centroid'][1] / imageHeight
 
+					bb_x1 = int(obj['bounding_box']['top_left'][0])
+					bb_y1 = int(obj['bounding_box']['top_left'][1])
+
+					bb_x2 = int(obj['bounding_box']['bottom_right'][0])
+					bb_y2 = int(obj['bounding_box']['bottom_right'][1])
+
+					if (bb_x1 < 0 or bb_x1 > imageWidth or bb_x2 < 0 or bb_x2 > imageWidth or
+						bb_y1 < 0 or bb_y1 > imageHeight or bb_y2 < 0 or bb_y2 > imageHeight):
+						created = False
+						break
 					if (c_x <= 1 and c_x >= 0 and c_y <= 1 and c_y >= 0):
 						bb_x1 = obj['projected_cuboid'][7][0] / imageWidth
 						bb_y1 = obj['projected_cuboid'][7][1] / imageHeight
@@ -105,6 +117,7 @@ def createLabelContent():
 				counter += 1
 
 def renumberInFolder(folder):
+	print('renumbering because of deleted files')
 	allSubdirs = [x[0] for x in os.walk(folder)]
 	counter = 0
 	for dir in allSubdirs:
@@ -113,6 +126,7 @@ def renumberInFolder(folder):
 			counter+=1
 
 def createBinaryMask():
+	print('creating binary mask')
 	allSubdirs = [x[0] for x in os.walk('../sspdFormat/labelsJSON')]
 	counter = 0
 	for dir in allSubdirs:
@@ -135,6 +149,7 @@ def createBinaryMask():
 
 						bb_x2 = int(obj['bounding_box']['bottom_right'][0])
 						bb_y2 = int(obj['bounding_box']['bottom_right'][1])
+
 
 						img = cv2.imread("../sspdFormat/maskPolyColor/" + format(counter, '06') + ".cs.png")
 						if (c_y == imageHeight):
@@ -168,7 +183,8 @@ def createBinaryMask():
 				counter += 1
 
 def createTestAndTrainFiles(counter):
-	test_size = int(counter * 0.05)
+	print('creating test and train files')
+	test_size = int(counter * 0.3)
 	step = int(counter / test_size)
 	accOffset = 0
 	
