@@ -6,3 +6,7 @@ sspd
 python proxy.py ./sspd/cfg/ape.data ./sspd/cfg/yolo-pose.cfg ./sspd/backup/ape/model_backup.weights 0.0.0.0:8021
 
 python proxy.py ./sspd/cfg/psp.data ./sspd/cfg/yolo-pose.cfg ./sspd/backup/psp/model.weights 0.0.0.0:8021
+
+
+betapose
+python proxy.py 0.0.0.0:8021

@@ -4,7 +4,7 @@ this_dir = os.path.dirname(__file__)
 current_path = os.path.join(this_dir)
 sys.path.append(current_path)
 import numpy as np
-from utils.pyquaternion import Quaternion
+from .pyquaternion import Quaternion
 from IPython import embed
 
 def add_err(gt_pose, est_pose, model):
