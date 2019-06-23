@@ -105,7 +105,6 @@ class ImageLoader:
 
         if (self.Q.full()):
             self.Q.get()
-        print('putting img')
 
         # img is Tensor of Tensors, originial image is cv2 image
         self.Q.put((img, orig_img_list, frame, im_dim_list))
@@ -159,8 +158,6 @@ class DetectionLoader:
             img, orig_img, frame, im_dim_list = self.image_loader.getitem()
             if img is None:
                 continue
-            else:
-                print('DetectionLoader: image exists')
             with torch.no_grad():
                 img = img.cuda()
                 # Critical, use yolo to do object detection here!
@@ -170,8 +167,6 @@ class DetectionLoader:
                 if isinstance(dets, int) or dets.shape[0] == 0:
                     if self.Q.full():
                         self.Q.get()
-
-                    print('DetectionLoader: YOLO didn\'t find any objects')
                     self.Q.put((orig_img, frame, None, None, None, None, None))
                     continue
                 dets = dets.cpu()
@@ -264,7 +259,6 @@ class DetectionProcessor:
                 if boxes is None or boxes.nelement() == 0:
                     while self.Q.full():
                         time.sleep(0.2)
-                    print('DetectionProcessor: No boxes so do nothing')
                     self.Q.put((None, orig_img, im_name, boxes, scores, None, None))
                     continue
                 inp = im_to_torch(cv2.cvtColor(orig_img[0], cv2.COLOR_BGR2RGB))

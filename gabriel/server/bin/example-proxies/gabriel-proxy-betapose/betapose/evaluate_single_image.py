@@ -22,6 +22,7 @@ from .fn import getTime
 from .utils.model import * # 3D model class
 from .utils.sixd import load_sixd
 from .utils.metrics import *
+from .utils.boundingbox.bb_projector import get_ply_bb_corners, project_obj_onto_img
 from queue import Queue, LifoQueue
 
 from .pPose_nms import pose_nms, write_json
@@ -40,13 +41,15 @@ writer = None
 det_processor = None
 det_loader = None
 pose_model = None
+ply_model_corners = None
+cam_K = None
 image_loader = Queue(maxsize=1)
 
 
 
 
 def evaluate_img(img, frame):
-    global image_loader, writer, det_processor, det_loader, pose_model
+    global image_loader, writer, det_processor, det_loader, pose_model, ply_model_corners, cam_K
 
     # Put a new image on the queue
     image_loader.putitem(img, frame)
@@ -73,8 +76,14 @@ def evaluate_img(img, frame):
         writer.save(boxes, scores, hm, pt1, pt2, orig_img, frame)
 
     result = writer.read()
-    print(result)
-    return [orig_img[0], 'rot', 'trans']
+    R_p = result['cam_R']
+    t_p = result['cam_t']
+
+    if (R_p != []):
+        img_with_projection = project_obj_onto_img(orig_img[0], ply_model_corners, R_p, t_p, cam_K)
+        return [img_with_projection, R_p, t_p]
+    else:
+        return [orig_img[0], R_p, t_p]
 
 ''' 
     Load cam, model and KP model*******************************************************
@@ -124,7 +133,7 @@ def load_sixd_models(base_path, obj_id):
     return bench
 
 def initialize():
-    global image_loader, writer, det_processor, det_loader, pose_model
+    global image_loader, writer, det_processor, det_loader, pose_model, ply_model_corners, cam_K
 
     # Loading camera, model, kp_model information of SIXD benchmark datasets
     print ("Betapose begin running now.")
@@ -135,6 +144,7 @@ def initialize():
     cam_K = sixd_bench.cam
     models = sixd_bench.models
     kpmodels = sixd_bench.kpmodels
+    ply_model_corners = get_ply_bb_corners(sixd_base + '/models/obj_01.ply')
     kp_model_vertices = kpmodels['{:02d}'.format(int(obj_id))].vertices # used in pnp
     model_vertices = models['{:02d}'.format(int(obj_id))].vertices # used in calculating add
 
