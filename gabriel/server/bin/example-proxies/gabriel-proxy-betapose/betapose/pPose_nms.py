@@ -6,7 +6,7 @@ import zipfile
 import time
 from multiprocessing.dummy import Pool as ThreadPool
 import numpy as np
-from opt import opt
+from .opt import opt
 from IPython import embed
 
 ''' Constant Configuration '''

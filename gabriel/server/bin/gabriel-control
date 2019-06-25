@@ -19,9 +19,6 @@
 #   limitations under the License.
 #
 
-
-print('aaaaa')
-
 import json
 from optparse import OptionParser
 import os

@@ -30,8 +30,10 @@ import struct
 import sys
 import time
 import wave
-import sspd.evaluate_single_image
+import betapose.evaluate_single_image
+import betapose.opt
 
+args = betapose.opt.opt
 dir_file = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(dir_file, "../../.."))
 import gabriel3
@@ -82,69 +84,61 @@ class DummyVideoApp(gabriel3.proxy.CognitiveProcessThread):
         print("processing: ")
         print("%s\n" % header)
         img = fix_image_ratio(raw2cv_image(data), resize_max = 640)
-        eval_res = sspd.evaluate_single_image.evaluate_img(img)
+        eval_res = betapose.evaluate_single_image.evaluate_img(img, 'frame')
         display_image('input', eval_res[0], wait_time = 1)
         return json.dumps({'center': str(eval_res[1]), 'bb': str(eval_res[2])})
 
 
 if __name__ == "__main__":
     import sys
-    if (len(sys.argv) == 5):
-        datacfg_file = sys.argv[1]  # data file
-        cfgfile_file = sys.argv[2]  # yolo network file
-        weightfile_file = sys.argv[3]  # weightd file
-        sspd.evaluate_single_image.initialize_network(datacfg_file, cfgfile_file, weightfile_file)
+    betapose.evaluate_single_image.initialize()
 
-        #settings = gabriel3.util.process_command_line(sys.argv[1:])
-        settings = sys.argv[4]
-        ip_addr, port = gabriel3.network.get_registry_server_address(settings)
-        service_list = gabriel3.network.get_service_list(ip_addr, port)
-        print("Gabriel Server :")
-        print(pprint.pformat(service_list))
+    #settings = gabriel3.util.process_command_line(sys.argv[1:])
+    settings = args.control_server
+    ip_addr, port = gabriel3.network.get_registry_server_address(settings)
+    service_list = gabriel3.network.get_service_list(ip_addr, port)
+    print("Gabriel Server :")
+    print(pprint.pformat(service_list))
 
-        video_ip = service_list.get(gabriel3.ServiceMeta.VIDEO_TCP_STREAMING_IP)
-        video_port = service_list.get(gabriel3.ServiceMeta.VIDEO_TCP_STREAMING_PORT)
-        acc_ip = service_list.get(gabriel3.ServiceMeta.ACC_TCP_STREAMING_IP)
-        acc_port = service_list.get(gabriel3.ServiceMeta.ACC_TCP_STREAMING_PORT)
-        audio_ip = service_list.get(gabriel3.ServiceMeta.AUDIO_TCP_STREAMING_IP)
-        audio_port = service_list.get(gabriel3.ServiceMeta.AUDIO_TCP_STREAMING_PORT)
-        ucomm_ip = service_list.get(gabriel3.ServiceMeta.UCOMM_SERVER_IP)
-        ucomm_port = service_list.get(gabriel3.ServiceMeta.UCOMM_SERVER_PORT)
+    video_ip = service_list.get(gabriel3.ServiceMeta.VIDEO_TCP_STREAMING_IP)
+    video_port = service_list.get(gabriel3.ServiceMeta.VIDEO_TCP_STREAMING_PORT)
+    acc_ip = service_list.get(gabriel3.ServiceMeta.ACC_TCP_STREAMING_IP)
+    acc_port = service_list.get(gabriel3.ServiceMeta.ACC_TCP_STREAMING_PORT)
+    audio_ip = service_list.get(gabriel3.ServiceMeta.AUDIO_TCP_STREAMING_IP)
+    audio_port = service_list.get(gabriel3.ServiceMeta.AUDIO_TCP_STREAMING_PORT)
+    ucomm_ip = service_list.get(gabriel3.ServiceMeta.UCOMM_SERVER_IP)
+    ucomm_port = service_list.get(gabriel3.ServiceMeta.UCOMM_SERVER_PORT)
 
-        # this queue is shared by multiple sensor processing threads
-        result_queue = multiprocessing.Queue()
+    # this queue is shared by multiple sensor processing threads
+    result_queue = multiprocessing.Queue()
 
-        # image receiving and processing
-        image_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
-        print("TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
-        video_streaming = gabriel3.proxy.SensorReceiveClient((video_ip, video_port), image_queue)
-        video_streaming.start()
-        video_streaming.isDaemon = True
+    # image receiving and processing
+    image_queue = queue.Queue(gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
+    print("TOKEN SIZE OF OFFLOADING ENGINE: %d" % gabriel3.Const.APP_LEVEL_TOKEN_SIZE)
+    video_streaming = gabriel3.proxy.SensorReceiveClient((video_ip, video_port), image_queue)
+    video_streaming.start()
+    video_streaming.isDaemon = True
 
-        video_app = DummyVideoApp(image_queue, result_queue, engine_id="Dummy_video")
-        video_app.start()
-        video_app.isDaemon = True
+    video_app = DummyVideoApp(image_queue, result_queue, engine_id="Dummy_video")
+    video_app.start()
+    video_app.isDaemon = True
 
-        # result pub/sub
-        result_pub = gabriel3.proxy.ResultPublishClient((ucomm_ip, ucomm_port), result_queue)
-        result_pub.start()
-        result_pub.isDaemon = True
+    # result pub/sub
+    result_pub = gabriel3.proxy.ResultPublishClient((ucomm_ip, ucomm_port), result_queue)
+    result_pub.start()
+    result_pub.isDaemon = True
 
-        try:
-            while True:
-                time.sleep(1)
-        except Exception as e:
-            pass
-        except KeyboardInterrupt as e:
-            LOG.info("user exits\n")
-        finally:
-            if video_streaming is not None:
-                video_streaming.terminate()
-            if video_app is not None:
-                video_app.terminate()
-            result_pub.terminate()
-
-    else:
-        print('Usage:')
-        print('python evaluateSingleImage.py datacfg cfgfile weightfile garbiel-control-server-address')
+    try:
+        while True:
+            time.sleep(1)
+    except Exception as e:
+        pass
+    except KeyboardInterrupt as e:
+        LOG.info("user exits\n")
+    finally:
+        if video_streaming is not None:
+            video_streaming.terminate()
+        if video_app is not None:
+            video_app.terminate()
+        result_pub.terminate()
 

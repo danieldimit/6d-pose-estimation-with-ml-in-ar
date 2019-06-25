@@ -31,10 +31,8 @@ def calcAngularDistance(gt_rot, pr_rot):
 
 def get_camera_intrinsic():
     K = np.zeros((3, 3), dtype='float64')
-    #K[0, 0], K[0, 2] = 572.4114, 325.2611
-    #K[1, 1], K[1, 2] = 573.5704, 242.0489
-    K[0, 0], K[0, 2] = 320, 320
-    K[1, 1], K[1, 2] = 320, 240
+    K[0, 0], K[0, 2] = 572.4114, 325.2611
+    K[1, 1], K[1, 2] = 573.5704, 242.0489
     K[2, 2] = 1.
     return K
 
@@ -978,8 +976,7 @@ def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=1):
 
 def read_data_cfg(datacfg):
     options = dict()
-    #options['gpus'] = '0,1,2,3'
-    options['gpus'] = '0,1'
+    options['gpus'] = '0,1,2,3'
     options['num_workers'] = '4'
     with open(datacfg, 'r') as fp:
         lines = fp.readlines()

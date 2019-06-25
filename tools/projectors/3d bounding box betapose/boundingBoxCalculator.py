@@ -14,7 +14,7 @@ def splitAndCastToFloat(line):
 
 
 def getBBOfPlyObject():
-	with open("obj_01.ply") as f:
+	with open("ape.ply") as f:
 		content = f.readlines()
 		content = [x.strip() for x in content] 
 		
@@ -41,6 +41,7 @@ def getBBOfPlyObject():
 		mins = vertices.min(0)
 		maxs = vertices.max(0)
 		minsMaxs = np.array([[mins.item(0),mins.item(1),mins.item(2)], [maxs.item(0),maxs.item(1),maxs.item(2)]]).T
+		print(minsMaxs)
 		corners = np.array(np.meshgrid(minsMaxs[0,:], minsMaxs[1,:], minsMaxs[2,:])).T.reshape(-1,3)
 		R_gt = np.array([[0.94137597, 0.31805399, -0.11248200, 11.03801096], [0.23415700, -0.85603601, -0.46083900, 124.58541745], [-0.24286000, 0.40748399, -0.88032699, 849.71766750]])
 		R_p = np.array([[0.9406752291304329, 0.3258326502956354, -0.09467416385545607, 11.76421530495168], [0.270510546808252, -0.8885950780502103, -0.37043600166620033, 127.83885882665334], [-0.20482714020829385, 0.3228496109123609, -0.9240205470485108, 866.1953181788415]])
