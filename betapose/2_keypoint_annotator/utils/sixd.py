@@ -5,6 +5,7 @@ import itertools
 import numpy as np
 import cv2
 import yaml
+from opt import opt
 
 #from utils_recon.model import Model3D
 from utils.model import Model3D
@@ -57,7 +58,7 @@ class Benchmark:
 def load_sixd(base_path, seq, nr_frames=0, load_mesh=True):
 
     bench = Benchmark()
-    bench.scale_to_meters = 0.001
+    bench.scale_to_meters = 1
     if os.path.exists(os.path.join(base_path, 'camera.yml')):
         cam_info = load_yaml(os.path.join(base_path,  'camera.yml'))
         bench.cam[0, 0] = cam_info['fx']
@@ -79,7 +80,6 @@ def load_sixd(base_path, seq, nr_frames=0, load_mesh=True):
     path = os.path.join(base_path, 'test/{:02d}/'.format(seq))
     info = load_info(os.path.join(path, 'info.yml'))
     gts = load_gt(os.path.join(path, 'gt.yml'))
-
     # Load frames
     nr_frames = nr_frames if nr_frames > 0 else len(info)
     for i in range(nr_frames):
@@ -90,6 +90,7 @@ def load_sixd(base_path, seq, nr_frames=0, load_mesh=True):
         fr.color = cv2.imread(path + "rgb/" + nr_string + ".png").astype(np.float32) / 255.0
         #print ("fr.color's shape:")
         #print (fr.color.shape)
+        nr_string = '{:04d}'.format(i)        
         fr.depth = cv2.imread(path + "depth/" + nr_string + ".png", -1).astype(np.float32) * bench.scale_to_meters
         #print ("fr.depth's shape:")
         #print (fr.depth.shape)
@@ -109,7 +110,8 @@ def load_sixd(base_path, seq, nr_frames=0, load_mesh=True):
         # Build a set of all used model IDs for this sequence
         all_gts = list(itertools.chain(*[f.gt for f in bench.frames]))
         #for ID in set([gt[0] for gt in all_gts]):
-        for ID in range(1,16):
+        #for ID in range(1,16):
+        for ID in range(1,opt.total_obj_number):
             name = 'obj_{:02d}'.format(ID)
             bench.models['{:02d}'.format(ID)].load(os.path.join(base_path, 'models/' + name + '.ply'), scale=bench.scale_to_meters)
             # bench.models['{:02d}'.format(ID)].load(os.path.join(base_path, 'models/' + name + '.ply'))

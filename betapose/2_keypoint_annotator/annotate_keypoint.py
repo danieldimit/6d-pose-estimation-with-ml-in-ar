@@ -49,7 +49,7 @@ def load_yaml(path):
 def load_bench(base_path):
 	print("Loading models and KP models...")
 	bench = Benchmark()
-	bench.scale_to_meters = 0.001 # Unit in model is mm
+	bench.scale_to_meters = 1 # Unit in model is mm
 	# You need to give camera info manually. Here is the camera info in Linemod dataset.
 	bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
 
@@ -59,13 +59,16 @@ def load_bench(base_path):
 		name = '{:02d}'.format(int(key))
 		bench.models[name] = Model3D()
 		bench.models[name].diameter = val['diameter']
+		name = 'obj_{:02d}'.format(int(key))
+		bench.models['{:02d}'.format(int(key))].load(os.path.join(base_path, 'models/' + name + '.ply'),
+											   scale=bench.scale_to_meters)
 
 	# loading models, Linemod has 15 seqs, we use 13(except 3 and 7)
-	for ID in range(1,16):
-		if (ID != 3 and ID != 7):
-			name = 'obj_{:02d}'.format(ID)
-			bench.models['{:02d}'.format(ID)].load(os.path.join(base_path, 'models/' + name + '.ply'),
-												   scale=bench.scale_to_meters)
+	# for ID in range(1,16):
+	# 	if (ID != 3 and ID != 7):
+	# 		name = 'obj_{:02d}'.format(ID)
+	# 		bench.models['{:02d}'.format(ID)].load(os.path.join(base_path, 'models/' + name + '.ply'),
+	# 											   scale=bench.scale_to_meters)
 	print("Loading models finished!")
 
 	# loading and refine kp models

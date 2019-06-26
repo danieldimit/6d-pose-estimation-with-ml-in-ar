@@ -8,6 +8,8 @@ parser.add_argument('--expID', default='default', type=str,
                     help='Experiment ID')
 parser.add_argument('--obj_id', default=1, type=int,
                     help='Object ID to annotate.')
+parser.add_argument('--total_obj_number', default=10, type=int,
+                    help='Total number of objects.')
 parser.add_argument('--total_kp_number', default=50, type=int,
                     help='Total number of keypoints to annotate.')
 parser.add_argument('--train_split', default=180, type=int,
