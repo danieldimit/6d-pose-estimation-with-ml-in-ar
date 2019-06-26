@@ -16,6 +16,7 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent(output):
 		os.makedirs(output + '/rgb')
 		os.makedirs(output + '/depth')
 		os.makedirs(output + '/labelsJSON')
+		os.makedirs(output + '/labelsJSON')
 
 	allSubdirs = [x[0] for x in os.walk('./')]
 	counter = 0
@@ -37,9 +38,7 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent(output):
 				counterCs += 1
 
 def cleanUselessFoldersBetapose(output):
-	shutil.rmtree(output + '/maskPolyColor/')
 	shutil.rmtree(output + '/labelsJSON/')
-	os.remove(output + '/camera.json')
 
 
 def createLabelContentForBetapose(output):
@@ -111,11 +110,11 @@ def deletePicsWithoutObjects(output, pics2del):
 
 
 def reformatForBetapose():
-	createJPEGImagesAndLabelsJSONFoldersAndContent('../betaposeFormatReduced')
-	pics2del = createLabelContentForBetapose('../betaposeFormatReduced')
-	deletePicsWithoutObjects('../betaposeFormatReduced', pics2del)
-	renumberInFolder('../betaposeFormatReduced/rgb/')
-	renumberInFolder('../betaposeFormatReduced/depth/')
-	cleanUselessFoldersBetapose('../betaposeFormatReduced')
+	createJPEGImagesAndLabelsJSONFoldersAndContent('../betaposeFormat')
+	pics2del = createLabelContentForBetapose('../betaposeFormat')
+	deletePicsWithoutObjects('../betaposeFormat', pics2del)
+	renumberInFolder('../betaposeFormat/rgb/')
+	renumberInFolder('../betaposeFormat/depth/')
+	cleanUselessFoldersBetapose('../betaposeFormat')
 
 reformatForBetapose()

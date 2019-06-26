@@ -2,3 +2,5 @@
 *.png
 *.jpg
 *.jpeg
+*.out
+*.csv
