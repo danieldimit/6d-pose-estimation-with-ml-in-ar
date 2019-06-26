@@ -15,7 +15,7 @@ def rnd(x):
     return max(-2 * x, min(2 * x, np.random.randn(1)[0] * x))
 
 
-def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dataset, train=True, nJoints_coco=46):
+def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dataset, train=True, nJoints_coco=opt.nKps):
     img = load_image(img_path)
     if train:
         img[0].mul_(random.uniform(0.7, 1.3)).clamp_(0, 1)
