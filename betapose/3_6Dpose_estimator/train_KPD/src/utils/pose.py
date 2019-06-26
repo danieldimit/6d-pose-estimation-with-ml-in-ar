@@ -15,8 +15,7 @@ def rnd(x):
     return max(-2 * x, min(2 * x, np.random.randn(1)[0] * x))
 
 
-def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dataset, train=True, nJoints_coco=50):
-
+def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dataset, train=True, nJoints_coco=46):
     img = load_image(img_path)
     if train:
         img[0].mul_(random.uniform(0.7, 1.3)).clamp_(0, 1)
@@ -74,7 +73,7 @@ def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dat
     # Counting Joints number
     jointNum = 0
     if imgset == 'coco':
-        for i in range(50):
+        for i in range(opt.nKps):
             if part[i][0] > 0 and part[i][0] > upLeft[0] and part[i][1] > upLeft[1] \
                and part[i][0] < bottomRight[0] and part[i][1] < bottomRight[1]:
                 jointNum += 1
@@ -106,7 +105,6 @@ def generateSampleBox(img_path, bndbox, part, nJoints, imgset, scale_factor, dat
 
     inputResH, inputResW = opt.inputResH, opt.inputResW
     outputResH, outputResW = opt.outputResH, opt.outputResW
-
     inp = cropBox(img, upLeft, bottomRight, inputResH, inputResW)
 
     if jointNum == 0:

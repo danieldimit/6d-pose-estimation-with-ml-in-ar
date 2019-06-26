@@ -5,6 +5,7 @@
 
 import numpy as np
 import torch
+import os
 import scipy.misc
 from torchsample.transforms import SpecialCrop, Pad
 import torch.nn.functional as F
