@@ -14,7 +14,7 @@ def splitAndCastToFloat(line):
 
 
 def getBBOfPlyObject():
-	with open("ape.ply") as f:
+	with open("gibson10x.ply") as f:
 		content = f.readlines()
 		content = [x.strip() for x in content] 
 		
@@ -50,7 +50,7 @@ def getBBOfPlyObject():
 		i_c = np.array([[572.4114, 0. ,325.2611], [  0.   ,  573.5704, 242.0489], [  0. ,      0. ,      1.    ]])
 		
 		corners = np.c_[corners, np.ones((len(corners), 1))].transpose()
-		print(corners)
+		print(f)
 		print(R_gt)
 		print(i_c)
 		proj_2d_gt   = compute_projection(corners, R_gt, i_c)
@@ -65,7 +65,7 @@ def getBBOfPlyObject():
 		print(proj_2d_gt)
 		print(proj_2d_p)
 		# Make empty black image
-		image=cv2.imread('000000000505.png',1)
+		image=cv2.imread(data[0]['image_id'],1)
 		height, width, channels = image.shape
 		red = [0,0,255]
 		blue = [255,0,0]
