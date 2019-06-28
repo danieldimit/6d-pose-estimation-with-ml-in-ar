@@ -28,7 +28,7 @@ with open('./yoloReport.csv', 'w') as csv_file:
 	counter = 0
 
 	for weight_file in os.listdir(weights_dir):
-		print(str(counter) + ' out of ' + str(len(weights_dir)) + ' analyzed')
+		print(str(counter) + ' out of ' + str(len(os.listdir(weights_dir))) + ' analyzed')
 		counter+=1
 
 		if (weight_file is 'init.weights'):
