@@ -53,11 +53,11 @@ def createLabelContent():
 					c_x = obj['projected_cuboid_centroid'][0] / imageWidth
 					c_y = obj['projected_cuboid_centroid'][1] / imageHeight
 
-					bb_x1 = int(obj['bounding_box']['top_left'][0])
-					bb_y1 = int(obj['bounding_box']['top_left'][1])
+					bb_x1 = int(obj['bounding_box']['top_left'][1])
+					bb_y1 = int(obj['bounding_box']['top_left'][0])
 
-					bb_x2 = int(obj['bounding_box']['bottom_right'][0])
-					bb_y2 = int(obj['bounding_box']['bottom_right'][1])
+					bb_x2 = int(obj['bounding_box']['bottom_right'][1])
+					bb_y2 = int(obj['bounding_box']['bottom_right'][0])
 
 					if (bb_x1 < 0 or bb_x1 > imageWidth or bb_x2 < 0 or bb_x2 > imageWidth or
 						bb_y1 < 0 or bb_y1 > imageHeight or bb_y2 < 0 or bb_y2 > imageHeight):
