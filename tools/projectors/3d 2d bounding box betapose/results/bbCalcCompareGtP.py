@@ -3,6 +3,7 @@ import shutil
 import json
 import numpy as np
 import random
+import yaml
 import cv2
 from utils import *
 from distutils.dir_util import copy_tree
@@ -73,7 +74,7 @@ def getBBOfPlyObject(gt_folder, img_num, ply_name):
 		print(proj_2d_gt)
 		print(proj_2d_p)
 		# Make empty black image
-		image=cv2.imread(data[0]['image_id'],1)
+		image=cv2.imread(gt_folder + '/' + format(img_num, '04') + '.png',1)
 		height, width, channels = image.shape
 		red = [0,0,255]
 		blue = [255,0,0]
@@ -104,7 +105,7 @@ def getBBOfPlyObject(gt_folder, img_num, ply_name):
 
 if __name__ == "__main__":
     # Training settings
-	# example: python boundingBoxCalculatorForLabels.py guitar 1499 gibson10x.ply
+	# example: python boundingBoxCalcCompareGtP.py guitar 1499 gibson10x.ply
 	folder     = sys.argv[1]
 	img_num   = int(sys.argv[2])
 	ply_name   = sys.argv[3]
