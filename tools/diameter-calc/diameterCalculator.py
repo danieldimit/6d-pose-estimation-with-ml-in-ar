@@ -56,7 +56,7 @@ def calc_pts_diameter(pts):
         if max_dist > diameter:
             diameter = max_dist
 
-    return max_dist
+    return diameter
 
 
 
