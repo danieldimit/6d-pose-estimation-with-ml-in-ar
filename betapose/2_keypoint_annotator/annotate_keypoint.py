@@ -51,7 +51,10 @@ def load_bench(base_path):
 	bench = Benchmark()
 	bench.scale_to_meters = 1 # Unit in model is mm
 	# You need to give camera info manually. Here is the camera info in Linemod dataset.
-	bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
+	camera_info = load_yaml(os.path.join(base_path, 'test', '{:02d}'.format(opt.obj_id), 'info.yml'))
+	#bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
+	bench.cam = np.array(camera_info[0]['cam_K']).reshape(3, 3)
+	print(bench.cam)
 
 	#collect model info
 	model_info = load_yaml(os.path.join(base_path, 'models', 'models_info.yml'))
