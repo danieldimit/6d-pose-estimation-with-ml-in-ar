@@ -115,6 +115,13 @@ def renumberInFolder(folder):
 	counter = 0
 	for dir in allSubdirs:
 		for file in os.listdir(dir):
+			os.rename(folder + file, folder + format(counter, '05') + '.png')
+			counter+=1
+
+	allSubdirs = [x[0] for x in os.walk(folder)]
+	counter = 0
+	for dir in allSubdirs:
+		for file in os.listdir(dir):
 			os.rename(folder + file, folder + format(counter, '04') + '.png')
 			counter+=1
 
@@ -129,8 +136,8 @@ def reformatForBetapose():
 	createJPEGImagesAndLabelsJSONFoldersAndContent('../betaposeFormat')
 	pics2del = createLabelContentForBetapose('../betaposeFormat')
 	deletePicsWithoutObjects('../betaposeFormat', pics2del)
-	#renumberInFolder('../betaposeFormat/rgb/')
-	#renumberInFolder('../betaposeFormat/depth/')
+	renumberInFolder('../betaposeFormat/rgb/')
+	renumberInFolder('../betaposeFormat/depth/')
 	cleanUselessFoldersBetapose('../betaposeFormat')
 
 reformatForBetapose()

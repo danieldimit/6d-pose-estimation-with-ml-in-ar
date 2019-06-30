@@ -16,7 +16,7 @@ def splitAndCastToFloat(line):
 
 def getBBOfPlyObject(gt_folder, img_num, ply_name):
 
-	with open(ply_name) as f:
+	with open(gt_folder + '/' + ply_name) as f:
 		content = f.readlines()
 		content = [x.strip() for x in content] 
 		
@@ -89,7 +89,7 @@ def getBBOfPlyObject(gt_folder, img_num, ply_name):
 
 if __name__ == "__main__":
     # Training settings
-	# example: python boundingBoxCalculatorForLabels.py guitar 1499 gibson10x.ply
+	# example: python bbCalcForLabels.py guitar 1499 gibson10x.ply
 	folder     = sys.argv[1]
 	img_num   = int(sys.argv[2])
 	ply_name   = sys.argv[3]

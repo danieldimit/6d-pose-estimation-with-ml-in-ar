@@ -101,7 +101,7 @@ def valid(ply):
     print('Diameter: ')
     print(diam)
     models_info = open('models_info.yml', "w+")
-    models_info.write('1: {{ diameter: {:.5f}, mix_x: {:.5f}, min_y: {:.5f}, min_z: {:.5f}, size_x: {:.5f}, size_y: {:.5f}, size_z: {:.5f}}}'.format(diam, mins.item(0), mins.item(1), mins.item(2), abs(maxs.item(0)) + abs(mins.item(0)), abs(maxs.item(1)+abs(mins.item(1))) , abs(maxs.item(2))+ abs(maxs.item(2))))
+    models_info.write('1: {{ diameter: {:.5f}, mix_x: {:.5f}, min_y: {:.5f}, min_z: {:.5f}, size_x: {:.5f}, size_y: {:.5f}, size_z: {:.5f}}}'.format(diam, mins.item(0), mins.item(1), mins.item(2), abs(maxs.item(0)) + abs(mins.item(0)), abs(maxs.item(1))+abs(mins.item(1)) , abs(maxs.item(2))+ abs(maxs.item(2))))
     models_info.close()
 
 if __name__ == '__main__':
@@ -111,4 +111,4 @@ if __name__ == '__main__':
         valid(ply)
     else:
         print('Usage:')
-        print(' python diameterCalculator.py psp.ply')
+        print('python diameterCalculator.py psp.ply')
