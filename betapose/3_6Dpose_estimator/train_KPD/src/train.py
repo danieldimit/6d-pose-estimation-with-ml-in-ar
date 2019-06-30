@@ -190,7 +190,7 @@ def main():
         if i > 0 and i % 20 == 0: # in step2 and step3
             loss, acc = valid(val_loader, m, criterion, optimizer, writer)
             torch.save(
-                m_dev.state_dict(), '../exp/{}/{}/model_{}.pkl'.format(opt.dataset, opt.expID, opt.epoch))
+                m_dev.state_dict(), '../exp/{}/{}/model.pkl'.format(opt.dataset, opt.expID))
             torch.save(
                 opt, '../exp/{}/{}/option.pkl'.format(opt.dataset, opt.expID, opt.epoch))
             torch.save(
@@ -205,6 +205,8 @@ def main():
             if acc > best_valid_acc:
                 best_epoch = i
                 best_valid_acc = acc
+                torch.save(
+                    m_dev.state_dict(), '../exp/{}/{}/model_best.pkl'.format(opt.dataset, opt.expID))
         print('The %d epoch is the best!'%best_epoch, best_valid_acc)
         '''
         if opt.dataset != 'mpii':

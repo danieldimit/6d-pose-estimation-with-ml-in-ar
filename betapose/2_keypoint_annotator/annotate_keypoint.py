@@ -339,7 +339,7 @@ if __name__ == '__main__':
 
 	# log writer
 	global LOG_FOUT
-	LOG_FOUT = open('kp_dataset_log.txt', 'w')
+	#LOG_FOUT = open('kp_dataset_log.txt', 'w')
 
 	global output_counter
 	global output_img_dir

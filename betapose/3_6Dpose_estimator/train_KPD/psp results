@@ -1,7 +1,7 @@
 no dpg - 120
 dpg - 40
 
-29.06.2019 - guitar
+29.06.2019 - guitar (randomized dataset. wrong cam_intrinsic)
 no dpg - start 0.03
 epoch 18 - 0.1
 epoch 40 - 0.14
@@ -40,4 +40,32 @@ epoch 49 - 0.63
 epoch 52 - 0.68
 epoch 58 - 0.72
 epoch 60 - 0.77 (0.78)
+
+30.06.2019 - guitar (simple dataset. wrong cam_intrinsic)
+no dpg - start 0.02
+epoch 19 - 0.1 (0.11)
+epoch 41 - 0.15 (0.13)
+epoch 60 - 0.19 (0.16)
+epoch 80 - 0.24 (0.17)
+epoch 100 - 0.16 (0.18)
+epoch 120 - 0.25 (0.19)
+
+30.06.2019 - guitar (simple dataset. right cam_intrinsic)
+no dpg - start 0.02
+epoch 18 - 0.1 (0.12)
+epoch 33 - 0.15
+epoch 41 - 0.16 (0.13)
+epoch 60 - 0.03 (0.07)
+epoch 80 - 0.18 (0.16)
+epoch 100 - 0.22 (0.19)
+epoch 120 - 0.29 (0.23)
+epoch 140 - 0.38 (0.26)
+epoch 160 - 0.5 (0.21)
+epoch 180 - 0.65 (0.15)
+epoch 200 - 0.73 (0.22)
+epoch 220 - 0.8 (0.27)
+epoch 240 - 0.84 (0.16)
+epoch 260 - 0.87 (0.26)
+epoch 280 - 0.89 (0.27)
+epoch 300 - 0.9 (0.22)
 
