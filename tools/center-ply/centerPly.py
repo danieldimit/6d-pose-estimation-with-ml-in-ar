@@ -69,4 +69,4 @@ if __name__ == '__main__':
         valid(ply)
     else:
         print('Usage:')
-        print('python diameterCalculator.py psp.ply')
+        print('python centerPly.py psp.ply')
