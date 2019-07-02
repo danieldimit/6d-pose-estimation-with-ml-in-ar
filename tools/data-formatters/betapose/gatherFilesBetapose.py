@@ -77,7 +77,7 @@ def createLabelContentForBetapose(output):
 							r2 = obj['pose_transform'][1][:3]
 							r3 = obj['pose_transform'][2][:3]
 							r = np.array(r1 + r2 + r3).reshape(3, 3).T.reshape(9)
-							t = np.array(obj['location'])
+							t = np.array(obj['location']) * 10
 							bb_tl = np.array(obj['bounding_box']['top_left'])
 							bb_br = np.array(obj['bounding_box']['bottom_right'])
 							res = bb_br - bb_tl
@@ -111,13 +111,6 @@ def createLabelContentForBetapose(output):
 	return pics2del
 
 def renumberInFolder(folder):
-	allSubdirs = [x[0] for x in os.walk(folder)]
-	counter = 0
-	for dir in allSubdirs:
-		for file in os.listdir(dir):
-			os.rename(folder + file, folder + format(counter, '05') + '.png')
-			counter+=1
-
 	allSubdirs = [x[0] for x in os.walk(folder)]
 	counter = 0
 	for dir in allSubdirs:

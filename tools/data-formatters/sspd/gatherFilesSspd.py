@@ -150,7 +150,6 @@ def createBinaryMask():
 						bb_x2 = int(obj['bounding_box']['bottom_right'][0])
 						bb_y2 = int(obj['bounding_box']['bottom_right'][1])
 
-
 						img = cv2.imread("../sspdFormat/maskPolyColor/" + format(counter, '06') + ".cs.png")
 						if (c_y == imageHeight):
 							c_y -= 1
@@ -238,12 +237,6 @@ def calc_pts_diameter(pts):
 			diameter = max_dist
 	return diameter
 
-def copySSPD():
-	fromDirectory = "../sspdFormat"
-	toDirectory = "../betaposeFormat"
-
-	copy_tree(fromDirectory, toDirectory)
-
 def changeLabels():
 	for file in glob.glob("../betaposeFormat/labels/*.txt"):
 	    f = open(file, "r")
@@ -252,11 +245,6 @@ def changeLabels():
 	    newLine = lineVals[0] + ' ' + lineVals[1] + ' ' + lineVals[2] + ' ' + lineVals[19] + ' ' + lineVals[20]
 	    with open('../betaposeFormat/labelsConverted/' + os.path.basename(f.name), 'w') as file:
 	        file.write(newLine)
-
-def cleanUselessFoldersBetapose():
-	shutil.rmtree('../betaposeFormat/maskPolyColor/')
-	shutil.rmtree('../betaposeFormat/labels/')
-	shutil.rmtree('../betaposeFormat/labelsJSON/')
 
 def cleanUselessFoldersSSPD():
 	shutil.rmtree('../sspdFormat/maskPolyColor/')
@@ -278,12 +266,5 @@ def reformatForSSPD():
 	createTestAndTrainFiles(len(os.listdir('../sspdFormat/labels')))
 	#createTestAndTrainFilesReduced(len(os.listdir('../sspdFormat/labels')), 2000)
 	cleanUselessFoldersSSPD()
-
-def reformatForYoloAndBetapose():
-	reformatForSSPD()
-	copySSPD()
-	changeLabels()
-	cleanUselessFoldersBetapose()
-	os.rename('../betaposeFormat/labelsConverted/', '../betaposeFormat/labels/')
 
 reformatForSSPD()

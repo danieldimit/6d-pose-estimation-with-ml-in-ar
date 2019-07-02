@@ -6,21 +6,14 @@
 import cv2
 import numpy as np
 
+import sys
 import os
 
 
-label_dir = "000942.txt" 
-image_dir = "000942.png" 
-
-
-label_dir = "000000.txt" 
-image_dir = "000000.jpg"
-
-def main():
+def main(image_dir,label_dir):
     with open(label_dir) as lb_f:
         label = lb_f.readline()
     label = label.split()
-
     img = cv2.imread(image_dir)
     print(img.shape)
 
@@ -51,5 +44,10 @@ def main():
 
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    # Training settings
+    # example: python bbCalcForLabels.py guitar 1499 gibson10x.ply
+    img_form   = sys.argv[1]
+    img   = format(int(sys.argv[2]), '06') + '.' + img_form
+    bb   = format(int(sys.argv[2]), '06') + '.txt'
+    main(img, bb)
