@@ -197,25 +197,18 @@ def createBinaryMask():
 def createTestAndTrainFiles(counter):
 	print('creating test and train files')
 	test_size = int(counter * 0.3)
-	step = counter / test_size
-	accOffset = 0
-	
+	test = random.sample(range(test_size), 3)
+
 	f_test = open(os.path.join('../sspdFormat', 'test.txt'), "w+")
 	f_train = open(os.path.join('../sspdFormat', 'train.txt'), "w+")
 	f_train_range = open(os.path.join('../sspdFormat', 'training_range.txt'), "w+")
-	
-	for x in range(test_size):
-		accOffsetNew = accOffset + step
-		offsetFix = int(accOffset)
-		if (int(accOffsetNew) - int(accOffset) > int(step)):
-			offsetFix = int(accOffset) + 1
-		test_object_n = random.randint(offsetFix, int(accOffsetNew))
-		f_test.write('sspdFormat/JPEGImages/' + format(test_object_n, '06') + ".png \n")
-		for train_object_n in range(offsetFix, int(accOffsetNew)):
-			if (train_object_n != test_object_n and train_object_n < counter):
-				f_train.write('sspdFormat/JPEGImages/' + format(train_object_n, '06') + ".png \n")
-				f_train_range.write(str(train_object_n) + " \n")
-		accOffset = accOffsetNew
+
+	for i in range(10):
+		if (i in test):
+			f_test.write('sspdFormat/JPEGImages/' + format(test_object_n, '06') + ".png \n")
+		else:
+			f_train.write('sspdFormat/JPEGImages/' + format(train_object_n, '06') + ".png \n")
+			f_train_range.write(str(train_object_n) + " \n")
 	
 	f_test.close()
 	f_train.close()
