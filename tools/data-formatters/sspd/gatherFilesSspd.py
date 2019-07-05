@@ -1,4 +1,4 @@
-import glob, os
+import glob, os, sys
 import shutil
 import json
 import numpy as np
@@ -12,7 +12,7 @@ imageHeight = 480
 def extractRange(xArr):
 	return np.max(xArr) - np.min(xArr)
 
-def createJPEGImagesAndLabelsJSONFoldersAndContent():
+def createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix):
 	print('copying pics and labels')
 	if not os.path.exists('../sspdFormat'):
 		os.makedirs('../sspdFormat')
@@ -21,6 +21,12 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent():
 		os.makedirs('../sspdFormat/labelsJSON')
 		os.makedirs('../sspdFormat/labels')
 		os.makedirs('../sspdFormat/mask')
+
+
+	if (mask_fix):
+		mask_folder = '../sspdFormat/maskPolyColor'
+	else:
+		mask_folder = '../sspdFormat/mask'
 
 	allSubdirs = [x[0] for x in os.walk('./')]
 	counter = 0
@@ -35,7 +41,7 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent():
 				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/JPEGImages', format(counter, '06') + '.png'))
 				counter += 1
 			if file.endswith("cs.png"):
-				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/maskPolyColor', format(counter, '06') + '.cs.png'))
+				shutil.copy(os.path.join(dir, file), os.path.join(mask_folder, format(counter, '06') + '.cs.png'))
 				counterCs += 1
 
 def createLabelContent():
@@ -101,6 +107,13 @@ def createLabelContent():
 
 						range_x = extractRange(np.array([bb_x1,bb_x2,bb_x3,bb_x4,bb_x5,bb_x6,bb_x7,bb_x8]))
 						range_y = extractRange(np.array([bb_y1,bb_y2,bb_y3,bb_y4,bb_y5,bb_y6,bb_y7,bb_y8]))
+
+						bbox = obj['bounding_box']
+						tl = bbox['top_left']
+						br = bbox['bottom_right']
+
+						y_range = float(br[0] - tl[0]/imageHeight)
+						x_range = float(br[1] - tl[1]/imageWidth)
 
 						f = open(os.path.join('../sspdFormat/labels',format(createdCounter, '06') + '.txt'), "w+")
 						f.write("0 %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f %.6f" % (c_x, c_y, bb_x1, bb_y1, bb_x2, bb_y2, bb_x3, bb_y3, bb_x4, bb_y4, bb_x5, bb_y5, bb_x6, bb_y6, bb_x7, bb_y7, bb_x8, bb_y8, range_x, range_y))
@@ -184,7 +197,7 @@ def createBinaryMask():
 def createTestAndTrainFiles(counter):
 	print('creating test and train files')
 	test_size = int(counter * 0.3)
-	step = int(counter / test_size)
+	step = counter / test_size
 	accOffset = 0
 	
 	f_test = open(os.path.join('../sspdFormat', 'test.txt'), "w+")
@@ -193,10 +206,13 @@ def createTestAndTrainFiles(counter):
 	
 	for x in range(test_size):
 		accOffsetNew = accOffset + step
-		test_object_n = random.randint(accOffset,accOffsetNew)
+		offsetFix = int(accOffset)
+		if (int(accOffsetNew) - int(accOffset) > int(step)):
+			offsetFix = int(accOffset) + 1
+		test_object_n = random.randint(offsetFix, int(accOffsetNew))
 		f_test.write('sspdFormat/JPEGImages/' + format(test_object_n, '06') + ".png \n")
-		for train_object_n in range(accOffset, accOffsetNew):
-			if (train_object_n != test_object_n):
+		for train_object_n in range(offsetFix, int(accOffsetNew)):
+			if (train_object_n != test_object_n and train_object_n < counter):
 				f_train.write('sspdFormat/JPEGImages/' + format(train_object_n, '06') + ".png \n")
 				f_train_range.write(str(train_object_n) + " \n")
 		accOffset = accOffsetNew
@@ -257,9 +273,10 @@ def cleanUselessFoldersSSPD():
 
 
 
-def reformatForSSPD():
-	createJPEGImagesAndLabelsJSONFoldersAndContent()
-	createBinaryMask()
+def reformatForSSPD(mask_fix):
+	createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix)
+	if (mask_fix):
+		createBinaryMask()
 	createLabelContent()
 	renumberInFolder('../sspdFormat/mask/')
 	renumberInFolder('../sspdFormat/JPEGImages/')
@@ -267,4 +284,11 @@ def reformatForSSPD():
 	#createTestAndTrainFilesReduced(len(os.listdir('../sspdFormat/labels')), 2000)
 	cleanUselessFoldersSSPD()
 
-reformatForSSPD()
+if __name__ == "__main__":
+    # Training settings
+    # example: python bbCalcForLabels.py guitar 1499 gibson10x.ply
+    with_binary_fix = False
+    if (len(sys.argv) > 1):
+    	with_binary_fix   = sys.argv[1] is '--maskFix'
+
+    reformatForSSPD(with_binary_fix)

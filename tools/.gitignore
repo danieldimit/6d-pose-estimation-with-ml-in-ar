@@ -3,5 +3,6 @@
 *.jpg
 *.jpeg
 *.out
+*.txt
 *.csv
 models_info.yml

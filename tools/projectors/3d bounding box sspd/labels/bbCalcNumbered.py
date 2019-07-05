@@ -35,7 +35,11 @@ def main(image_dir,label_dir):
     x_r = int(float(label[19])*img.shape[1])
     y_r = int(float(label[20])*img.shape[0])
 
-    cv2.line(img,(int(float(label[17])*img.shape[1]),int(float(label[18])*img.shape[0])),(int(float(label[17])*img.shape[1])+x_r,int(float(label[18])*img.shape[0])+y_r), (0,255,0),1)
+    cv2.line(img,
+        (int(float(label[17])*img.shape[1]),int(float(label[18])*img.shape[0])),
+        (int(float(label[17])*img.shape[1])+x_r,int(float(label[18])*img.shape[0])+y_r), 
+        (0,255,0),
+        1)
 
     # Show the image and wait key press
     cv2.imshow(wname, img)
