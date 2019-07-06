@@ -11,11 +11,14 @@ imageWidth = 640
 imageHeight = 480
 
 def createJPEGImagesAndLabelsJSONFoldersAndContent(output):
-	if not os.path.exists(output):
-		os.makedirs(output)
-		os.makedirs(output + '/rgb')
-		os.makedirs(output + '/depth')
-		os.makedirs(output + '/labelsJSON')
+	if os.path.exists(output):
+		print('deleting old betaposeFormat')
+		shutil.rmtree(output)
+
+	os.makedirs(output)
+	os.makedirs(output + '/rgb')
+	os.makedirs(output + '/depth')
+	os.makedirs(output + '/labelsJSON')
 
 	allSubdirs = [x[0] for x in os.walk('./')]
 	counter = 0
@@ -27,13 +30,15 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent(output):
 				shutil.copy(os.path.join(dir, file), os.path.join(output, 'camera.json'))
 				counterJson += 1
 			if file.endswith(".json") and not file.endswith("settings.json"):
-				shutil.copy(os.path.join(dir, file), os.path.join(output + '/labelsJSON', format(counterJson, '06') + '.json'))
+				shutil.copy(os.path.join(dir, file), os.path.join(output + '/labelsJSON', file))
 				counterJson += 1
 			if file.endswith(".png") and not file.endswith("cs.png") and not file.endswith("depth.png") and not file.endswith("is.png"):
-				shutil.copy(os.path.join(dir, file), os.path.join(output + '/rgb', format(counter, '04') + '.png'))
+				file_name = format(int(file.split('.')[0]), '04') + '.png'
+				shutil.copy(os.path.join(dir, file), os.path.join(output + '/rgb', file_name))
 				counter += 1
 			if file.endswith("depth.png"):
-				shutil.copy(os.path.join(dir, file), os.path.join(output + '/depth', format(counter, '04') + '.png'))
+				file_name = format(int(file.split('.')[0]), '04') + '.png'
+				shutil.copy(os.path.join(dir, file), os.path.join(output + '/depth', file_name))
 				counterCs += 1
 
 def cleanUselessFoldersBetapose(output):
@@ -63,6 +68,8 @@ def createLabelContentForBetapose(output):
 				counterReal += 1
 				if (len(data['objects']) > 0):
 					for obj in data['objects']:
+
+						number = int(file.split('.')[0])
 						bb_x1 = int(obj['bounding_box']['top_left'][1])
 						bb_y1 = int(obj['bounding_box']['top_left'][0])
 
@@ -79,19 +86,21 @@ def createLabelContentForBetapose(output):
 							r = np.array(r1 + r2 + r3).reshape(3, 3).T.reshape(9)
 							t = np.array(obj['location']) * 10
 							bb_tl = np.array(obj['bounding_box']['top_left'])
+							bb_tl = np.array([bb_tl[1], bb_tl[0]])
 							bb_br = np.array(obj['bounding_box']['bottom_right'])
+							bb_br = np.array([bb_br[1], bb_br[0]])
 							res = bb_br - bb_tl
 							bb_tl = bb_tl.astype(int)
 							res = res.astype(int)
 							res = np.append(bb_tl, res, axis=0)
 
-							f.write(str(createdCounter) + ':\n')
+							f.write(str(number) + ':\n')
 							f.write('- cam_R_m2c: ' + np.array2string(r, precision=8, separator=',', suppress_small=True) + '\n')
 							f.write('  cam_t_m2c: ' + np.array2string(t, precision=8, separator=',', suppress_small=True) + '\n')
 							f.write('  obj_bb: ' + np.array2string(res, separator=',') + '\n')
 							f.write('  obj_id: 1\n')
 
-							f_c.write(str(createdCounter) + ':\n')
+							f_c.write(str(number) + ':\n')
 							f_c.write('  cam_K: ' + np.array2string(c_mat, precision=8, separator=',', suppress_small=True) + '\n')
 							f_c.write('  depth_scale: 1.0\n')
 							created = True
@@ -119,6 +128,7 @@ def renumberInFolder(folder):
 			counter+=1
 
 def deletePicsWithoutObjects(output, pics2del):
+	print(len(pics2del))
 	for picNum in pics2del:
 		os.remove(output + '/rgb/' + format(picNum, '04') + '.png')
 		os.remove(output + '/depth/' + format(picNum, '04') + '.png')
@@ -128,9 +138,9 @@ def deletePicsWithoutObjects(output, pics2del):
 def reformatForBetapose():
 	createJPEGImagesAndLabelsJSONFoldersAndContent('../betaposeFormat')
 	pics2del = createLabelContentForBetapose('../betaposeFormat')
-	deletePicsWithoutObjects('../betaposeFormat', pics2del)
-	renumberInFolder('../betaposeFormat/rgb/')
-	renumberInFolder('../betaposeFormat/depth/')
+	#deletePicsWithoutObjects('../betaposeFormat', pics2del)
+	#renumberInFolder('../betaposeFormat/rgb/')
+	#renumberInFolder('../betaposeFormat/depth/')
 	cleanUselessFoldersBetapose('../betaposeFormat')
 
 reformatForBetapose()
