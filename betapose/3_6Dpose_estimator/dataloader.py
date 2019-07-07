@@ -1,27 +1,27 @@
 import os
+import sys
+import time
+from multiprocessing import Queue as pQueue
+from threading import Thread
+
+import cv2
+import numpy as np
 import torch
-from torch.autograd import Variable
+import torch.multiprocessing as mp
 import torch.utils.data as data
 import torchvision.transforms as transforms
 from PIL import Image, ImageDraw
+from torch.autograd import Variable
+
+from KPD.src.utils.eval import getPrediction
 from KPD.src.utils.img import load_image, cropBox, im_to_torch
 from opt import opt
-from yolo.preprocess import prep_image, prep_frame, inp_to_image
-from pPose_nms import pose_nms, write_json
-from KPD.src.utils.eval import getPrediction
-from yolo.util import write_results, dynamic_write_results
-from yolo.darknet import Darknet
-from tqdm import tqdm
-import cv2
-import json
-import numpy as np
-import sys
-import time
+from pPose_nms import pose_nms
 from utils.utils import pnp
-import torch.multiprocessing as mp
-from multiprocessing import Process
-from multiprocessing import Queue as pQueue
-from threading import Thread
+from yolo.darknet import Darknet
+from yolo.preprocess import prep_image, prep_frame
+from yolo.util import dynamic_write_results
+
 # import the Queue class from Python 3
 if sys.version_info >= (3, 0):
     from queue import Queue, LifoQueue
@@ -33,7 +33,6 @@ else:
 #     from fn import vis_frame_fast as vis_frame
 # else:
 #     from fn import vis_frame
-from IPython import embed # for debugging
 
 # This class is deprecated, use the next one instead.
 class Image_loader(data.Dataset):
@@ -159,7 +158,7 @@ class ImageLoader:
                 im_name_k = os.path.join(self.img_dir, im_name_k)
                 img_k, orig_img_k, im_dim_list_k = prep_image(im_name_k, inp_dim)
                 # For data preprocessing
-                img_k = self.transform(Image.open(im_name_k)).unsqueeze(0)
+                img_k = self.transform(Image.open(im_name_k).convert('RGB')).unsqueeze(0)
 
                 img.append(img_k)
                 orig_img.append(orig_img_k)
@@ -338,6 +337,7 @@ class DetectionLoader:
             with torch.no_grad():
                 img = img.cuda()
                 # Critical, use yolo to do object detection here!
+
                 prediction = self.det_model(img)
                 # NMS process
                 dets = dynamic_write_results(prediction, opt.confidence, opt.num_classes, nms=True, nms_conf=opt.nms_thesh)
@@ -763,9 +763,9 @@ class DataWriter:
         return self.Q.qsize()
 
 class Mscoco(data.Dataset):
-    def __init__(self, train=True, sigma=1,
+    def __init__(self, train=False, sigma=1,
                  scale_factor=(0.2, 0.3), rot_factor=40, label_type='Gaussian'):
-        self.img_folder = '../data/coco/images'    # root image folders # used in training
+        self.img_folder = './output01/eval'    # root image folders # used in training
         self.is_train = train           # training set or test set
         self.inputResH = opt.inputResH
         self.inputResW = opt.inputResW
