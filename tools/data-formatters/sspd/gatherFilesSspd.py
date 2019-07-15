@@ -197,18 +197,18 @@ def createBinaryMask():
 def createTestAndTrainFiles(counter):
 	print('creating test and train files')
 	test_size = int(counter * 0.3)
-	test = random.sample(range(test_size), 3)
+	test = random.sample(range(counter), test_size)
 
 	f_test = open(os.path.join('../sspdFormat', 'test.txt'), "w+")
 	f_train = open(os.path.join('../sspdFormat', 'train.txt'), "w+")
 	f_train_range = open(os.path.join('../sspdFormat', 'training_range.txt'), "w+")
 
-	for i in range(10):
+	for i in range(counter):
 		if (i in test):
-			f_test.write('sspdFormat/JPEGImages/' + format(test_object_n, '06') + ".png \n")
+			f_test.write('sspdFormat/JPEGImages/' + format(i, '06') + ".png \n")
 		else:
-			f_train.write('sspdFormat/JPEGImages/' + format(train_object_n, '06') + ".png \n")
-			f_train_range.write(str(train_object_n) + " \n")
+			f_train.write('sspdFormat/JPEGImages/' + format(i, '06') + ".png \n")
+			f_train_range.write(str(i) + " \n")
 	
 	f_test.close()
 	f_train.close()
