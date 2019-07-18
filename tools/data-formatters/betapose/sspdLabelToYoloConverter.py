@@ -9,8 +9,10 @@ for file in glob.glob("*.txt"):
     line = f.read()
 
     lineVals = line.split()
-
-    newLine = lineVals[0] + ' ' + lineVals[1] + ' ' + lineVals[2] + ' ' + lineVals[19] + ' ' + lineVals[20]
+    if (len(lineVals) > 19):
+        newLine = lineVals[0] + ' ' + lineVals[1] + ' ' + lineVals[2] + ' ' + lineVals[19] + ' ' + lineVals[20]
+    else:
+        newLine = ' '
     with open('../converted/' + file, 'w') as file:
         file.write(newLine)
 os.chdir('../')
