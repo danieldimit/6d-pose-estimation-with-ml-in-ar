@@ -320,17 +320,7 @@ class DataWriter:
             if not self.Q.empty():
                 (boxes, scores, hm_data, pt1, pt2, orig_img, im_name) = self.Q.get()
                 orig_img = np.array(orig_img, dtype=np.uint8)
-                if boxes is None:
-                    if opt.save_img or opt.save_video or opt.vis:
-                        img = orig_img
-                        if opt.vis:
-                            cv2.imshow("AlphaPose Demo", img)
-                            cv2.waitKey(30)
-                        if opt.save_img:
-                            cv2.imwrite(os.path.join(opt.outputpath, 'vis', im_name), img)
-                        if opt.save_video:
-                            self.stream.write(img)
-                else:
+                if not boxes is None:
                     # location prediction (n, kp, 2) | score prediction (n, kp, 1)
                     
                     preds_hm, preds_img, preds_scores = getPrediction(
@@ -339,7 +329,8 @@ class DataWriter:
                     result = pose_nms(boxes, scores, preds_img, preds_scores)
                     result = {
                         'imgname': im_name,
-                        'result': result
+                        'result': result,
+                        'boxes': boxes.cpu().numpy().astype(int)
                     } # append imgname here.
                     # result here includes imgname, bbox, kps, kp_score, proposal_score
                     # Critical, run pnp algorithm here to get 6d pose.

@@ -43,12 +43,15 @@ def get_ply_bb_corners(ply_model):
 		corners = np.array(np.meshgrid(minsMaxs[0, :], minsMaxs[1, :], minsMaxs[2, :])).T.reshape(-1, 3)
 		return corners
 
-def project_obj_onto_img(image, corners, R_p, t_p, i_c):
+def project_obj_onto_img(image, corners, R_p, t_p, i_c, bbs):
+	if (R_p != []):
 		corners = np.c_[corners, np.ones((len(corners), 1))].transpose()
 
 		Rt = np.append(R_p, t_p, axis=1)
 		proj_2d_p   = compute_projection(corners, Rt, i_c)
 		proj_2d_p = proj_2d_p.astype(int)
+
+
 
 		# Make empty black image
 		blue = [255,0,0]
@@ -66,4 +69,8 @@ def project_obj_onto_img(image, corners, R_p, t_p, i_c):
 		pts = np.array([[proj_2d_p[0,4], proj_2d_p[1,4]],[proj_2d_p[0,6], proj_2d_p[1,6]],[proj_2d_p[0,7], proj_2d_p[1,7]],[proj_2d_p[0,5], proj_2d_p[1,5]]], np.int32)
 		cv2.polylines(image,[pts],True,(0,255,255))
 
-		return image
+	for bb in bbs:
+		bb[bb < 0] = 0
+		cv2.rectangle(image, (bb[0], bb[1]),
+					  (bb[2], bb[3]), (0, 255, 0), 3)
+	return image

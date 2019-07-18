@@ -63,6 +63,7 @@ def evaluate_img(img, frame):
         if orig_img is None:
             return [img, 'rot', 'trans']
         if boxes is None or boxes.nelement() == 0:
+            print('nothing')
             writer.save(None, None, None, None, None, orig_img, frame)
             return [orig_img[0], 'rot', 'trans']
 
@@ -76,15 +77,14 @@ def evaluate_img(img, frame):
         writer.save(boxes, scores, hm, pt1, pt2, orig_img, frame)
 
     result = writer.read()
+    print(result)
     R_p = result['cam_R']
     t_p = result['cam_t']
+    bbs = result['boxes']
 
-    if (R_p != []):
-        img_with_projection = project_obj_onto_img(orig_img[0], ply_model_corners, R_p, t_p, cam_K)
-        return [img_with_projection, R_p, t_p]
-    else:
-        return [orig_img[0], R_p, t_p]
 
+    img_with_projection = project_obj_onto_img(orig_img[0], ply_model_corners, R_p, t_p, cam_K, bbs)
+    return [img_with_projection, R_p, t_p]
 ''' 
     Load cam, model and KP model*******************************************************
 '''
@@ -152,8 +152,8 @@ def initialize():
     print('Loading YOLO model..')
     sys.stdout.flush() # for multithread displaying
     image_loader = ImageLoader()
-    det_loader = DetectionLoader(image_loader, './betapose/yolo/cfg/yolov3-single.cfg',
-                                 './betapose/weights/yolo.weights').start()
+    det_loader = DetectionLoader(image_loader, './betapose/yolo/cfg/yolo-psp-single.cfg',
+                                 './betapose/weights/yolo-psp-single_1200.weights').start()
     det_processor = DetectionProcessor(det_loader).start()
     
     # Load pose model here
