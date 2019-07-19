@@ -9,6 +9,8 @@
 *.userosscache
 *.sln.docstates
 
+nohup.out
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -331,6 +333,7 @@ ASALocalRun/
 
 LINEMOD
 sspdFormat
+backgrounds
 backup
 .idea
 __pychache__

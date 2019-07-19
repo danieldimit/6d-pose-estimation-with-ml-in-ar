@@ -305,11 +305,11 @@ if __name__ == "__main__":
     decay         = float(net_options['decay'])
     steps         = [float(step) for step in net_options['steps'].split(',')]
     scales        = [float(scale) for scale in net_options['scales'].split(',')]
-    bg_file_names = get_all_files('sspdFormat/JPEGImages')
+    bg_file_names = get_all_files('./backgrounds')
     #bg_file_names = get_all_files('LINEMOD/ape/JPEGImages')
 
     # Train parameters
-    max_epochs    = 700 # max_batches*batch_size/nsamples+1
+    max_epochs    = 100000 # max_batches*batch_size/nsamples+1
     use_cuda      = True
     seed          = int(time.time())
     eps           = 1e-5

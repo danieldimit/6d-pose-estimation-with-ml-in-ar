@@ -279,7 +279,10 @@ class RegionLoss(nn.Module):
         loss_conf  = nn.MSELoss(size_average=False)(conf*conf_mask, tconf*conf_mask)/2.0
         # loss_cls   = self.class_scale * nn.CrossEntropyLoss(size_average=False)(cls, tcls)
         loss_cls = 0
-        loss_x     = loss_x0 + loss_x1 + loss_x2 + loss_x3 + loss_x4 + loss_x5 + loss_x6 + loss_x7 + loss_x8 
+        #print(" %f, %f, %f, %f, %f, %f, %f, %f, %f," % (loss_x0 , loss_x1 , loss_x2 , loss_x3 , loss_x4 , loss_x5 , loss_x6 , loss_x7 ,loss_x8 ))
+        #print(" %f, %f, %f, %f, %f, %f, %f, %f, %f," % (loss_y0, loss_y1, loss_y2, loss_y3, loss_y4, loss_y5, loss_y6, loss_y7, loss_y8))
+
+        loss_x     = loss_x0 + loss_x1 + loss_x2 + loss_x3 + loss_x4 + loss_x5 + loss_x6 + loss_x7 + loss_x8
         loss_y     = loss_y0 + loss_y1 + loss_y2 + loss_y3 + loss_y4 + loss_y5 + loss_y6 + loss_y7 + loss_y8 
         if False:
             loss   = loss_x + loss_y + loss_conf + loss_cls
