@@ -124,6 +124,7 @@ def createLabelContent():
 						f.close()
 						break
 				if not created:
+					print('deleting ' +  format(counter, '06') + '.png')
 					if (os.path.isfile('../sspdFormat/JPEGImages/' + format(counter, '06') + '.png')):
 						os.remove('../sspdFormat/JPEGImages/' + format(counter, '06') + '.png')
 					if (os.path.isfile('../sspdFormat/mask/' + format(counter, '06') + '.png')):
@@ -137,7 +138,8 @@ def renumberInFolder(folder):
 	counter = 0
 	for dir in allSubdirs:
 		for file in os.listdir(dir):
-			os.rename(folder + file, folder + format(counter, '06') + '.png')
+			end = file.split('.')[-1]
+			os.rename(folder + file, folder + format(counter, '06') + '.' + end)
 			counter+=1
 
 def createBinaryMask():
@@ -196,6 +198,8 @@ def createBinaryMask():
 					cv2.imwrite("../sspdFormat/mask/" + format(counter, '06') + ".png", img)
 				counter += 1
 
+	
+
 def createTestAndTrainFiles(counter, objectless_count):
 	print('creating test and train files')
 	test_size = int(counter * 0.3)
@@ -221,27 +225,6 @@ def createTestAndTrainFiles(counter, objectless_count):
 	f_train.close()
 	f_train_range.close()
 
-def createTestAndTrainFilesReduced(counter, reducedAmount):
-	test_size = int(reducedAmount)
-	step = int(counter / test_size)
-	accOffset = 0
-	
-	f_test = open(os.path.join('../sspdFormat', 'test.txt'), "w+")
-	f_train = open(os.path.join('../sspdFormat', 'train.txt'), "w+")
-	f_train_range = open(os.path.join('../sspdFormat', 'training_range.txt'), "w+")
-	
-	for x in range(test_size):
-		accOffsetNew = accOffset + step
-		test_object_n = random.randint(accOffset,accOffsetNew)
-		f_test.write('sspdFormat/JPEGImages/' + format(test_object_n, '06') + ".png \n")
-		train_object_n = random.randint(accOffset,accOffsetNew)
-		f_train.write('sspdFormat/JPEGImages/' + format(train_object_n, '06') + ".png \n")
-		f_train_range.write(str(train_object_n) + " \n")
-		accOffset = accOffsetNew
-	
-	f_test.close()
-	f_train.close()
-	f_train_range.close()
 
 def calc_pts_diameter(pts):
 	diameter = -1
@@ -256,17 +239,27 @@ def calc_pts_diameter(pts):
 def copyObjectLessImgsAndCreateEmptyLabels(counter):
 
 	counterLabels = counter
+	counterMasks = counter
 
 	# Copy the images that contain no objects of interest in them (negative examples)
 	allSubdirs = [x[0] for x in os.walk('../objectlessImages')]
+	print('Copying objectless images')
 	for dir in allSubdirs:
-		print(dir)
 		for file in os.listdir(dir):
-			if file.endswith(".jpg"):
-				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/JPEGImages', format(counter, '06') + '.jpg'))
-				counter += 1
+			end = file.split('.')[-1]
+			shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/JPEGImages', format(counter, '06') + '.' + end))
+			counter += 1
+
+
+	img = np.zeros((imageHeight,imageWidth,3), np.uint8)
+	print('Creating black masks')
+	for dir in allSubdirs:
+		for file in os.listdir(dir):
+			cv2.imwrite("../sspdFormat/mask/" + format(counterMasks, '06') + ".png", img)
+			counterMasks += 1
 
 	# Generate empty labels files for them
+	print('Generating empty label files')
 	for dir in allSubdirs:
 		print(dir)
 		for file in os.listdir(dir):
@@ -297,22 +290,24 @@ def cleanUselessFoldersSSPD():
 
 
 def reformatForSSPD(mask_fix):
-	#counter = createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix)
-	#if (mask_fix):
-		#createBinaryMask()
-	#createLabelContent()
-	#copyObjectLessImgsAndCreateEmptyLabels(counter)
-	#renumberInFolder('../sspdFormat/mask/')
-	#renumberInFolder('../sspdFormat/JPEGImages/')
+	createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix)
+	if (mask_fix):
+		createBinaryMask()
+	createLabelContent()
+	renumberInFolder('../sspdFormat/mask/')
+	renumberInFolder('../sspdFormat/JPEGImages/')
+	copyObjectLessImgsAndCreateEmptyLabels(len(os.listdir('../sspdFormat/labels')))
 	createTestAndTrainFiles(len(os.listdir('../sspdFormat/labels')), len(os.listdir('../objectlessImages')))
-	#createTestAndTrainFilesReduced(len(os.listdir('../sspdFormat/labels')), 2000)
-	#cleanUselessFoldersSSPD()
+	cleanUselessFoldersSSPD()
 
 if __name__ == "__main__":
     # Training settings
     # example: python bbCalcForLabels.py guitar 1499 gibson10x.ply
-    with_binary_fix = False
+    with_binary_fix = True
     if (len(sys.argv) > 1):
-    	with_binary_fix   = sys.argv[1] is '--maskFix'
+        with_binary_fix   = False
+        print('with max fix')
+    else:
+        print('without max fix')
 
     reformatForSSPD(with_binary_fix)
