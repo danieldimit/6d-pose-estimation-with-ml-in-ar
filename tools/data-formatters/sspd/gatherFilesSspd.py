@@ -33,6 +33,7 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix):
 	counterJson = 0
 	counterCs = 0
 	for dir in allSubdirs:
+		print(dir)
 		for file in os.listdir(dir):
 			if file.endswith(".json") and not file.endswith("settings.json"):
 				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/labelsJSON', format(counterJson, '06') + '.json'))
@@ -43,6 +44,7 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix):
 			if file.endswith("cs.png"):
 				shutil.copy(os.path.join(dir, file), os.path.join(mask_folder, format(counter, '06') + '.cs.png'))
 				counterCs += 1
+	return counter
 
 def createLabelContent():
 	print('creating labels and deleting pics where the obj is partly outside of frame')
@@ -194,7 +196,7 @@ def createBinaryMask():
 					cv2.imwrite("../sspdFormat/mask/" + format(counter, '06') + ".png", img)
 				counter += 1
 
-def createTestAndTrainFiles(counter):
+def createTestAndTrainFiles(counter, objectless_count):
 	print('creating test and train files')
 	test_size = int(counter * 0.3)
 	test = random.sample(range(counter), test_size)
@@ -203,11 +205,16 @@ def createTestAndTrainFiles(counter):
 	f_train = open(os.path.join('../sspdFormat', 'train.txt'), "w+")
 	f_train_range = open(os.path.join('../sspdFormat', 'training_range.txt'), "w+")
 
+	obj_img_count = counter - objectless_count
 	for i in range(counter):
-		if (i in test):
-			f_test.write('sspdFormat/JPEGImages/' + format(i, '06') + ".png \n")
+		if (i < obj_img_count):
+			img_type = ".png"
 		else:
-			f_train.write('sspdFormat/JPEGImages/' + format(i, '06') + ".png \n")
+			img_type = ".jpg"
+		if (i in test):
+			f_test.write('sspdFormat/JPEGImages/' + format(i, '06') + img_type + " \n")
+		else:
+			f_train.write('sspdFormat/JPEGImages/' + format(i, '06') + img_type + " \n")
 			f_train_range.write(str(i) + " \n")
 	
 	f_test.close()
@@ -246,6 +253,29 @@ def calc_pts_diameter(pts):
 			diameter = max_dist
 	return diameter
 
+def copyObjectLessImgsAndCreateEmptyLabels(counter):
+
+	counterLabels = counter
+
+	# Copy the images that contain no objects of interest in them (negative examples)
+	allSubdirs = [x[0] for x in os.walk('../objectlessImages')]
+	for dir in allSubdirs:
+		print(dir)
+		for file in os.listdir(dir):
+			if file.endswith(".jpg"):
+				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/JPEGImages', format(counter, '06') + '.jpg'))
+				counter += 1
+
+	# Generate empty labels files for them
+	for dir in allSubdirs:
+		print(dir)
+		for file in os.listdir(dir):
+			f = open(os.path.join('../sspdFormat/labels',format(counterLabels, '06') + '.txt'), "w+")
+			f.write("")
+			counterLabels += 1
+			f.close()
+	
+
 def changeLabels():
 	for file in glob.glob("../betaposeFormat/labels/*.txt"):
 	    f = open(file, "r")
@@ -267,15 +297,16 @@ def cleanUselessFoldersSSPD():
 
 
 def reformatForSSPD(mask_fix):
-	createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix)
-	if (mask_fix):
-		createBinaryMask()
-	createLabelContent()
-	renumberInFolder('../sspdFormat/mask/')
-	renumberInFolder('../sspdFormat/JPEGImages/')
-	createTestAndTrainFiles(len(os.listdir('../sspdFormat/labels')))
+	#counter = createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix)
+	#if (mask_fix):
+		#createBinaryMask()
+	#createLabelContent()
+	#copyObjectLessImgsAndCreateEmptyLabels(counter)
+	#renumberInFolder('../sspdFormat/mask/')
+	#renumberInFolder('../sspdFormat/JPEGImages/')
+	createTestAndTrainFiles(len(os.listdir('../sspdFormat/labels')), len(os.listdir('../objectlessImages')))
 	#createTestAndTrainFilesReduced(len(os.listdir('../sspdFormat/labels')), 2000)
-	cleanUselessFoldersSSPD()
+	#cleanUselessFoldersSSPD()
 
 if __name__ == "__main__":
     # Training settings
