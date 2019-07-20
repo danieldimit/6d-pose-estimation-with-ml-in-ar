@@ -115,7 +115,7 @@ def getBBOfPlyObject(gt_folder, ply_name):
 											   np.int32)
 								cv2.polylines(image, [pts], True, (255, 0, 255))
 
-								wname = 'Viz'
+								wname = str(img_num)
 								cv2.namedWindow(wname)
 								# Show the image and wait key press
 								cv2.imshow(wname, image)
