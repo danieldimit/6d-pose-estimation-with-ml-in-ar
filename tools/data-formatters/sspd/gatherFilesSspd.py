@@ -6,6 +6,7 @@ import random
 import cv2
 from distutils.dir_util import copy_tree
 from PIL import Image
+import operator
 
 imageWidth = 640
 imageHeight = 480
@@ -182,18 +183,59 @@ def createBinaryMask():
 						img[0:imageHeight,0:bb_y1] = (0,0,0)
 						img[0:imageHeight,bb_y2:imageWidth] = (0,0,0)
 
-						# Precision color the psp white and everything else in the bb black
+						color_dict = {}
+						img_copy = np.zeros((imageHeight,imageWidth,3), np.uint8)
+
+						if (bb_x1 > imageHeight or bb_x2 > imageHeight 
+							or bb_y2 > imageWidth or bb_y2 > imageWidth
+							or bb_x1 < 0 or bb_x2 < 0 or bb_y1 < 0 or bb_y2 < 0):
+							cv2.imwrite("../sspdFormat/mask/" + format(counter, '06') + ".png", img_copy)
+							created = True
+							break
+
 						for i in range(bb_x1, bb_x2):
 							for j in range(bb_y1, bb_y2):
 								if (i < imageHeight and i >= 0 and j < imageWidth and j >= 0):
-									if np.any(img[i, j] == pspColor):
-										img[i, j] = (255,255,255)
-									else:
-										img[i, j] = (0,0,0)
+									img_copy[i, j] = img[i, j]
 
-						#cv2.imshow('title',img)
-						cv2.imwrite("../sspdFormat/mask/" + format(counter, '06') + ".png", img)
-						created = True
+
+						for i in range(bb_x1, bb_x2):
+							for j in range(bb_y1, bb_y2):
+								if (i < imageHeight and i >= 0 and j < imageWidth and j >= 0):
+									color = np.array2string(img[i, j], separator=',')
+									if color in color_dict:
+										color_dict[color] += 1
+									else:
+										color_dict[color] = 1
+
+						sorted_c_d = sorted(color_dict.items(), key=operator.itemgetter(1), reverse=True)
+
+						# Precision color the psp white and everything else in the bb black
+						for k in range(len(sorted_c_d)):
+							color = np.fromstring(sorted_c_d[k][0][1:-2], dtype=int, sep=',')
+							for i in range(bb_x1, bb_x2):
+								for j in range(bb_y1, bb_y2):
+									if (i < imageHeight and i >= 0 and j < imageWidth and j >= 0):
+										if np.any(img[i, j] == color):
+											img_copy[i, j] = (255,255,255)
+										else:
+											img_copy[i, j] = (0,0,0)
+							corners = 0
+							# Check if one of the corners is of the object. If so the segmentation is wrong
+							if (np.any(img_copy[bb_x1, bb_y1] == (255,255,255))):
+								corners+=1
+							if (np.any(img_copy[bb_x1, bb_y2-1] == (255,255,255))):
+								corners+=1
+							if (np.any(img_copy[bb_x2-1, bb_y1] == (255,255,255))):
+								corners+=1
+							if (np.any(img_copy[bb_x2-1, bb_y2-1] == (255,255,255))):
+								corners+=1
+							print(str(k) + str(corners))
+							if (corners == 0):
+								#cv2.imshow('title',img)
+								cv2.imwrite("../sspdFormat/mask/" + format(counter, '06') + ".png", img_copy)
+								created = True
+								break
 						break
 				if (not created):
 					img = np.zeros((imageHeight,imageWidth,3), np.uint8)
