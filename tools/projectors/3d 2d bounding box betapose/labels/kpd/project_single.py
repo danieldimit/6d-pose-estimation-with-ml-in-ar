@@ -66,22 +66,26 @@ def getBBOfPlyObject(gt_folder, img_num, ply_name):
 		proj_2d_p = proj_2d_p.astype(int)
 
 		# Make empty black image
-		image=cv2.imread(gt_folder + '/' + format(img_num, '04') + '.png',1)
+		image=cv2.imread(gt_folder + '/rgb/' + format(img_num, '04') + '.png',1)
 		height, width, channels = image.shape
 		blue = [255,0,0]
 		image[proj_2d_p[1,:],proj_2d_p[0,:]]=blue
 
 		# Draw lower base of 3d bb
 		pts = np.array([[proj_2d_p[0,0], proj_2d_p[1,0]],[proj_2d_p[0,2], proj_2d_p[1,2]],[proj_2d_p[0,3], proj_2d_p[1,3]],[proj_2d_p[0,1], proj_2d_p[1,1]]], np.int32)
-		cv2.polylines(image,[pts],True,(0,255,255))
+		cv2.polylines(image,[pts],True,(255,0,0))
 		
 		# Draw the front of the bounding box
 		pts = np.array([[proj_2d_p[0,3], proj_2d_p[1,3]],[proj_2d_p[0,7], proj_2d_p[1,7]],[proj_2d_p[0,6], proj_2d_p[1,6]],[proj_2d_p[0,2], proj_2d_p[1,2]]], np.int32)
-		cv2.polylines(image,[pts],True,(0,255,255))
+		cv2.polylines(image,[pts],True,(0,0,255))
 
 		# Draw upper base of 3d bb
 		pts = np.array([[proj_2d_p[0,4], proj_2d_p[1,4]],[proj_2d_p[0,6], proj_2d_p[1,6]],[proj_2d_p[0,7], proj_2d_p[1,7]],[proj_2d_p[0,5], proj_2d_p[1,5]]], np.int32)
 		cv2.polylines(image,[pts],True,(0,255,255))
+
+		# Draw -y side
+		pts = np.array([[proj_2d_p[0,0], proj_2d_p[1,0]],[proj_2d_p[0,2], proj_2d_p[1,2]],[proj_2d_p[0,6], proj_2d_p[1,6]],[proj_2d_p[0,4], proj_2d_p[1,4]]], np.int32)
+		cv2.polylines(image,[pts],True,(0,255,0))
 
 		# Save
 		cv2.imwrite("result.png",image)

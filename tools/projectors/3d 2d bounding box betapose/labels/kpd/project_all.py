@@ -85,6 +85,10 @@ def getBBOfPlyObject(gt_folder, ply_name):
 								# Draw the front of the bounding box
 								pts = np.array([[proj_2d_p[0,3], proj_2d_p[1,3]],[proj_2d_p[0,7], proj_2d_p[1,7]],[proj_2d_p[0,6], proj_2d_p[1,6]],[proj_2d_p[0,2], proj_2d_p[1,2]]], np.int32)
 								cv2.polylines(image,[pts],True,(0,0,255))
+
+								# Draw -y side
+								pts = np.array([[proj_2d_p[0,0], proj_2d_p[1,0]],[proj_2d_p[0,2], proj_2d_p[1,2]],[proj_2d_p[0,6], proj_2d_p[1,6]],[proj_2d_p[0,4], proj_2d_p[1,4]]], np.int32)
+								cv2.polylines(image,[pts],True,(0,255,0))
 								
 
 								# Draw bb
