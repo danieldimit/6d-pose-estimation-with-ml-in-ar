@@ -212,7 +212,8 @@ def createBinaryMask():
 
 						# Precision color the psp white and everything else in the bb black
 						for k in range(len(sorted_c_d)):
-							color = np.fromstring(sorted_c_d[k][0][1:-2], dtype=int, sep=',')
+							color = np.fromstring(sorted_c_d[k][0][1:-1], dtype=int, sep=',')
+							print(color)
 							for i in range(bb_x1, bb_x2):
 								for j in range(bb_y1, bb_y2):
 									if (i < imageHeight and i >= 0 and j < imageWidth and j >= 0):
@@ -230,7 +231,7 @@ def createBinaryMask():
 								corners+=1
 							if (np.any(img_copy[bb_x2-1, bb_y2-1] == (255,255,255))):
 								corners+=1
-							print(str(k) + str(corners))
+
 							if (corners == 0):
 								#cv2.imshow('title',img)
 								cv2.imwrite("../sspdFormat/mask/" + format(counter, '06') + ".png", img_copy)
