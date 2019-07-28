@@ -5,6 +5,7 @@ import numpy as np
 import random
 import cv2
 from distutils.dir_util import copy_tree
+from PIL import Image
 
 imageWidth = 640
 imageHeight = 480
@@ -39,12 +40,13 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix):
 				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/labelsJSON', format(counterJson, '06') + '.json'))
 				counterJson += 1
 			if file.endswith(".png") and not file.endswith("cs.png") and not file.endswith("depth.png") and not file.endswith("is.png"):
-				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/JPEGImages', format(counter, '06') + '.png'))
+				im = Image.open(os.path.join(dir, file))
+				rgb_im = im.convert('RGB')
+				rgb_im.save(os.path.join('../sspdFormat/JPEGImages', format(counter, '06') + '.jpg'))
 				counter += 1
 			if file.endswith("cs.png"):
 				shutil.copy(os.path.join(dir, file), os.path.join(mask_folder, format(counter, '06') + '.cs.png'))
 				counterCs += 1
-	return counter
 
 def createLabelContent():
 	print('creating labels and deleting pics where the obj is partly outside of frame')
@@ -125,8 +127,8 @@ def createLabelContent():
 						break
 				if not created:
 					print('deleting ' +  format(counter, '06') + '.png')
-					if (os.path.isfile('../sspdFormat/JPEGImages/' + format(counter, '06') + '.png')):
-						os.remove('../sspdFormat/JPEGImages/' + format(counter, '06') + '.png')
+					if (os.path.isfile('../sspdFormat/JPEGImages/' + format(counter, '06') + '.jpg')):
+						os.remove('../sspdFormat/JPEGImages/' + format(counter, '06') + '.jpg')
 					if (os.path.isfile('../sspdFormat/mask/' + format(counter, '06') + '.png')):
 						os.remove('../sspdFormat/mask/' + format(counter, '06') + '.png')
 				
@@ -211,10 +213,7 @@ def createTestAndTrainFiles(counter, objectless_count):
 
 	obj_img_count = counter - objectless_count
 	for i in range(counter):
-		if (i < obj_img_count):
-			img_type = ".png"
-		else:
-			img_type = ".jpg"
+		img_type = ".jpg"
 		if (i in test):
 			f_test.write('sspdFormat/JPEGImages/' + format(i, '06') + img_type + " \n")
 		else:

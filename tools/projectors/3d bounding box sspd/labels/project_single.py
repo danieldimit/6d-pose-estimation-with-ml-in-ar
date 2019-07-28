@@ -50,7 +50,7 @@ def main(image_dir,label_dir):
 
 if __name__ == "__main__":
     # Training settings
-    # example: python bbCalcForLabels.py guitar 1499 gibson10x.ply
+    # example: python project_single.py png 123
     img_form   = sys.argv[1]
     img   = format(int(sys.argv[2]), '06') + '.' + img_form
     bb   = format(int(sys.argv[2]), '06') + '.txt'

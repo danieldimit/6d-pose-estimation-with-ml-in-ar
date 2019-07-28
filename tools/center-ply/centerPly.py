@@ -24,6 +24,7 @@ def valid(ply):
     mins = np.array(mesh.vertices).min(0)
     maxs = np.array(mesh.vertices).max(0)
     minsMaxs = np.array([[mins.item(0), mins.item(1), mins.item(2)], [maxs.item(0), maxs.item(1), maxs.item(2)]]).T
+    print(minsMaxs)
     diffs = (maxs + mins) / 2
     mesh.vertices = (np.array(mesh.vertices) - diffs)
 
