@@ -6,3 +6,6 @@ tensorboard
 .idea
 train_YOLO/backup/
 betapose/1_keypoint_designator/build
+*.jpg
+*.png
+*.json

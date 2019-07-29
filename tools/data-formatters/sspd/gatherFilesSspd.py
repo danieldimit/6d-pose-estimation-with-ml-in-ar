@@ -36,7 +36,8 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix):
 	counterCs = 0
 	for dir in allSubdirs:
 		print(dir)
-		for file in os.listdir(dir):
+		for file in sorted(os.listdir(dir)):
+			print
 			if file.endswith(".json") and not file.endswith("settings.json"):
 				shutil.copy(os.path.join(dir, file), os.path.join('../sspdFormat/labelsJSON', format(counterJson, '06') + '.json'))
 				counterJson += 1
@@ -46,7 +47,7 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix):
 				rgb_im.save(os.path.join('../sspdFormat/JPEGImages', format(counter, '06') + '.jpg'))
 				counter += 1
 			if file.endswith("cs.png"):
-				shutil.copy(os.path.join(dir, file), os.path.join(mask_folder, format(counter, '06') + '.cs.png'))
+				shutil.copy(os.path.join(dir, file), os.path.join(mask_folder, format(counterCs, '06') + '.cs.png'))
 				counterCs += 1
 
 def createLabelContent():
@@ -55,7 +56,7 @@ def createLabelContent():
 	counter = 0
 	createdCounter = 0
 	for dir in allSubdirs:
-		for file in os.listdir(dir):
+		for file in sorted(os.listdir(dir)):
 			with open(os.path.join(dir, file)) as json_file:  
 				data = json.load(json_file)
 				created = False
@@ -137,10 +138,10 @@ def createLabelContent():
 
 def renumberInFolder(folder):
 	print('renumbering because of deleted files')
-	allSubdirs = [x[0] for x in os.walk(folder)]
+	allSubdirs = sorted([x[0] for x in os.walk(folder)])
 	counter = 0
 	for dir in allSubdirs:
-		for file in os.listdir(dir):
+		for file in sorted(os.listdir(dir)):
 			end = file.split('.')[-1]
 			os.rename(folder + file, folder + format(counter, '06') + '.' + end)
 			counter+=1
@@ -150,7 +151,7 @@ def createBinaryMask():
 	allSubdirs = [x[0] for x in os.walk('../sspdFormat/labelsJSON')]
 	counter = 0
 	for dir in allSubdirs:
-		for file in os.listdir(dir):
+		for file in sorted(os.listdir(dir)):
 			if os.path.isfile("../sspdFormat/mask/" + format(counter, '06') + ".png"):
 				counter += 1
 				continue
@@ -312,7 +313,7 @@ def copyObjectLessImgsAndCreateEmptyLabels(counter):
 	
 
 def changeLabels():
-	for file in glob.glob("../betaposeFormat/labels/*.txt"):
+	for file in sorted(glob.glob("../betaposeFormat/labels/*.txt")):
 	    f = open(file, "r")
 	    line = f.read()
 	    lineVals = line.split()
@@ -332,7 +333,7 @@ def cleanUselessFoldersSSPD():
 
 
 def reformatForSSPD(mask_fix):
-	createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix)
+	#createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix)
 	if (mask_fix):
 		createBinaryMask()
 	createLabelContent()
