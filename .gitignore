@@ -9,3 +9,4 @@ betapose/1_keypoint_designator/build
 *.jpg
 *.png
 *.json
+*.ply
