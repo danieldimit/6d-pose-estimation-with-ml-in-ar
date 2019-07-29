@@ -152,12 +152,10 @@ def createBinaryMask():
 	counter = 0
 	for dir in allSubdirs:
 		for file in sorted(os.listdir(dir)):
-			if os.path.isfile("../sspdFormat/mask/" + format(counter, '06') + ".png"):
-				counter += 1
-				continue
 			with open(os.path.join(dir, file)) as json_file:  
 				data = json.load(json_file)
 				created = False
+				print(file)
 
 				for obj in data['objects']:
 					c_x = int(obj['projected_cuboid_centroid'][0])
@@ -333,7 +331,7 @@ def cleanUselessFoldersSSPD():
 
 
 def reformatForSSPD(mask_fix):
-	#createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix)
+	createJPEGImagesAndLabelsJSONFoldersAndContent(mask_fix)
 	if (mask_fix):
 		createBinaryMask()
 	createLabelContent()
