@@ -24,22 +24,27 @@ def createJPEGImagesAndLabelsJSONFoldersAndContent(output):
 	counter = 0
 	counterJson = 0
 	counterCs = 0
+	offset = 0
 	for dir in allSubdirs:
-		for file in os.listdir(dir):
+		print(dir + '  ' + str(offset))
+		for file in sorted(os.listdir(dir)):
 			if file.endswith("_camera_settings.json"):
 				shutil.copy(os.path.join(dir, file), os.path.join(output, 'camera.json'))
-				counterJson += 1
+				#counterJson += 1
 			if file.endswith(".json") and not file.endswith("settings.json"):
-				shutil.copy(os.path.join(dir, file), os.path.join(output + '/labelsJSON', file))
+				file_name = format(offset+int(file.split('.')[0]), '04') + '.json'
+				shutil.copy(os.path.join(dir, file), os.path.join(output + '/labelsJSON', file_name))
 				counterJson += 1
 			if file.endswith(".png") and not file.endswith("cs.png") and not file.endswith("depth.png") and not file.endswith("is.png"):
-				file_name = format(int(file.split('.')[0]), '04') + '.png'
+				file_name = format(offset+int(file.split('.')[0]), '04') + '.png'
 				shutil.copy(os.path.join(dir, file), os.path.join(output + '/rgb', file_name))
 				counter += 1
 			if file.endswith("depth.png"):
-				file_name = format(int(file.split('.')[0]), '04') + '.png'
+				file_name = format(offset+int(file.split('.')[0]), '04') + '.png'
 				shutil.copy(os.path.join(dir, file), os.path.join(output + '/depth', file_name))
 				counterCs += 1
+		if (len(os.listdir(dir)) > 10):
+			offset += int((len(os.listdir(dir)) - 2) / 5)
 
 def cleanUselessFoldersBetapose(output):
 	shutil.rmtree(output + '/labelsJSON/')
@@ -47,6 +52,7 @@ def cleanUselessFoldersBetapose(output):
 
 
 def createLabelContentForBetapose(output):
+	print('Creating labels')
 	allSubdirs = [x[0] for x in os.walk(output + '/labelsJSON')]
 	counter = 0
 	counterReal = 0
@@ -61,7 +67,7 @@ def createLabelContentForBetapose(output):
 		c_mat = np.array([c['fx'], c['s'], c['cx'], 0, c['fy'], c['cy'], 0, 0, 1])
 
 	for dir in allSubdirs:
-		for file in os.listdir(dir):
+		for file in sorted(os.listdir(dir)):
 			with open(os.path.join(dir, file)) as json_file:  
 				data = json.load(json_file)
 				created = False
@@ -78,6 +84,7 @@ def createLabelContentForBetapose(output):
 
 						if (bb_x1 < 0 or bb_x1 > imageWidth or bb_x2 < 0 or bb_x2 > imageWidth or bb_y1 < 0 or bb_y1 > imageHeight or bb_y2 < 0 or bb_y2 > imageHeight):
 							created = False
+							print('failed '+ str(number))
 							break
 						else:
 							r1 = obj['pose_transform'][0][:3]
@@ -94,13 +101,13 @@ def createLabelContentForBetapose(output):
 							res = res.astype(int)
 							res = np.append(bb_tl, res, axis=0)
 
-							f.write(str(number) + ':\n')
+							f.write(str(createdCounter) + ':\n')
 							f.write('- cam_R_m2c: ' + np.array2string(r, precision=8, separator=',', suppress_small=True) + '\n')
 							f.write('  cam_t_m2c: ' + np.array2string(t, precision=8, separator=',', suppress_small=True) + '\n')
 							f.write('  obj_bb: ' + np.array2string(res, separator=',') + '\n')
 							f.write('  obj_id: 1\n')
 
-							f_c.write(str(number) + ':\n')
+							f_c.write(str(createdCounter) + ':\n')
 							f_c.write('  cam_K: ' + np.array2string(c_mat, precision=8, separator=',', suppress_small=True) + '\n')
 							f_c.write('  depth_scale: 1.0\n')
 							created = True
@@ -108,22 +115,24 @@ def createLabelContentForBetapose(output):
 							break
 
 					if not created:
-						if (os.path.isfile('../betaposeFormat/rgb/' + format(counter, '04') + '.png')):
-							os.remove('../betaposeFormat/rgb/' + format(counter, '04') + '.png')
-						if (os.path.isfile('../betaposeFormat/depth/' + format(counter, '04') + '.png')):
-							os.remove('../betaposeFormat/depth/' + format(counter, '04') + '.png')
+						print('deleting: ' + str(number))
+						if (os.path.isfile('../betaposeFormat/rgb/' + format(number, '04') + '.png')):
+							os.remove('../betaposeFormat/rgb/' + format(number, '04') + '.png')
+						if (os.path.isfile('../betaposeFormat/depth/' + format(number, '04') + '.png')):
+							os.remove('../betaposeFormat/depth/' + format(number, '04') + '.png')
 					counter += 1
 				else:
 					pics2del = pics2del + [counterReal]
 	f.close()
 	f_c.close()
+	print(pics2del)
 	return pics2del
 
 def renumberInFolder(folder):
 	allSubdirs = [x[0] for x in os.walk(folder)]
 	counter = 0
 	for dir in allSubdirs:
-		for file in os.listdir(dir):
+		for file in sorted(os.listdir(dir)):
 			os.rename(folder + file, folder + format(counter, '04') + '.png')
 			counter+=1
 
@@ -138,9 +147,9 @@ def deletePicsWithoutObjects(output, pics2del):
 def reformatForBetapose():
 	createJPEGImagesAndLabelsJSONFoldersAndContent('../betaposeFormat')
 	pics2del = createLabelContentForBetapose('../betaposeFormat')
-	#deletePicsWithoutObjects('../betaposeFormat', pics2del)
-	#renumberInFolder('../betaposeFormat/rgb/')
-	#renumberInFolder('../betaposeFormat/depth/')
+	deletePicsWithoutObjects('../betaposeFormat', pics2del)
+	renumberInFolder('../betaposeFormat/rgb/')
+	renumberInFolder('../betaposeFormat/depth/')
 	cleanUselessFoldersBetapose('../betaposeFormat')
 
 reformatForBetapose()
