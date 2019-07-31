@@ -55,7 +55,7 @@ class Benchmark:
         self.frames = []
 
 
-def load_sixd(base_path, seq, nr_frames=0, load_mesh=True):
+def load_sixd(base_path, seq, nr_frames=0, load_mesh=True, offset=0, max=0):
 
     bench = Benchmark()
     bench.scale_to_meters = 1
@@ -82,7 +82,12 @@ def load_sixd(base_path, seq, nr_frames=0, load_mesh=True):
     gts = load_gt(os.path.join(path, 'gt.yml'))
     # Load frames
     nr_frames = nr_frames if nr_frames > 0 else len(info)
-    for i in range(nr_frames):
+    from_v = offset
+    to_v = offset + opt.batch_size
+    if (max < to_v):
+        to_v = max
+    for i in range(from_v, to_v):
+        print(i)
         fr = Frame()
         fr.nr = i
         nr_string = '{:04d}'.format(i)
@@ -91,7 +96,7 @@ def load_sixd(base_path, seq, nr_frames=0, load_mesh=True):
         #print ("fr.color's shape:")
         #print (fr.color.shape)
         nr_string = '{:04d}'.format(i)        
-        fr.depth = cv2.imread(path + "depth/" + nr_string + ".png", -1).astype(np.float32) * bench.scale_to_meters
+        #fr.depth = cv2.imread(path + "depth/" + nr_string + ".png", -1).astype(np.float32) * bench.scale_to_meters
         #print ("fr.depth's shape:")
         #print (fr.depth.shape)
         if os.path.exists(path + 'mask'):
@@ -105,7 +110,7 @@ def load_sixd(base_path, seq, nr_frames=0, load_mesh=True):
 
         fr.cam = info[i]['cam_K']
         bench.frames.append(fr)
-
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>')
     if load_mesh:
         # Build a set of all used model IDs for this sequence
         all_gts = list(itertools.chain(*[f.gt for f in bench.frames]))

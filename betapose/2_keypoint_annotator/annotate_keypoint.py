@@ -309,12 +309,17 @@ class sinobj:
 ''' 
 	Annotate keypoints on all the files. *******************************************************
 '''
-def gene_all_files(frames, cam_K, models, kp_models):
-	for idx,f in enumerate(frames):
+def gene_all_files(frames, cam_K, models, kp_models, offset, max):
+	print('Generating files')
+	from_v = offset
+	to_v = offset + opt.batch_size
+	if (max < to_v):
+		to_v = max
+	for idx in range(from_v, to_v):
 		#f.gt is a tuple consists of all objs
 		if idx % 100 == 0 :
 			print(idx, "has finished! ")
-		for obj_perf in f.gt:
+		for obj_perf in frames[idx % opt.batch_size].gt:
 			name = obj_perf[0]
 			# embed()
 			if name != OBJECT_CHOSEN: continue
@@ -329,7 +334,7 @@ def gene_all_files(frames, cam_K, models, kp_models):
 			frame_obj.project_all(cam_K)
 			frame_obj.project_kp(cam_K)
 			# embed()
-			whole_img = Image.fromarray(np.uint8(np.array(f.color)))
+			whole_img = Image.fromarray(np.uint8(np.array(frames[idx % opt.batch_size].color)))
 			frame_obj.output(whole_img)
 
 
@@ -366,17 +371,24 @@ if __name__ == '__main__':
 
 	print ("Running keypoint dataset generator ...")
 	bench = load_bench(sixd_base)
+	print ("Loading cam ...")
 	cam_K = bench.cam
+	print ("Loading models ...")
 	models = bench.models
+	print ("Loading kp models ...")
 	kpmodels = bench.kpmodels
 	print("Now generating", OBJECT_CHOSEN)
 	print("Saving in", kp_dataset_base)
 	print("Loading all sixd frames of current seq.")
 	# new added validation dataset
-	bench = load_sixd(sixd_base, seq=OBJECT_CHOSEN)	#Modified, take care!
-	# bench = load_sixd(sixd_base, seq=2)
-	print("Loading finished!")
-	gene_all_files(bench.frames, cam_K, models, kpmodels)
+	all_imgs = len(os.listdir(sixd_base + "/test/" + format(opt.obj_id, '02') + "/rgb"))
+	print(int(all_imgs / opt.batch_size) + 1)
+	for i in range(int(len(os.listdir(sixd_base + "/test/" + format(opt.obj_id, '02') + "/rgb")) / opt.batch_size) + 1):
+		offset = i * opt.batch_size
+		bench = load_sixd(sixd_base, seq=OBJECT_CHOSEN, offset=offset, max=all_imgs)	#Modified, take care!
+		# bench = load_sixd(sixd_base, seq=2)
+		print("Loading finished!")
+		gene_all_files(bench.frames, cam_K, models, kpmodels, offset, all_imgs)
 
 	print("Now spliting images into training and eval.")
 	LINEMOD_ROOT = os.path.join(sixd_base, 'test')

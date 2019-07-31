@@ -14,6 +14,8 @@ parser.add_argument('--total_kp_number', default=50, type=int,
                     help='Total number of keypoints to annotate.')
 parser.add_argument('--train_split', default=180, type=int,
                     help='Select this number to train and others to test.')
+parser.add_argument('--batch_size', default=1500, type=int,
+                    help='Fix for too big datasets that cannot be held into RAM and freeze the computer')
 parser.add_argument('--output_base', default = "/media/data_2/COCO_SIXD/supplementary/", type=str,
                     help='Output base address.')
 parser.add_argument('--sixd_base', default = "/media/data_2/SIXD/hinterstoisser", type=str,

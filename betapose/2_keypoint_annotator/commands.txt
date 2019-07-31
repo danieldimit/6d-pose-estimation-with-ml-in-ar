@@ -1,7 +1,15 @@
 python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../outputTest --sixd_base ../psp_base/
 python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../gibson_annotated_ --sixd_base ../gibson_base/ --train_split 600
 
-python annotate_keypoint.py --obj_id 1 --total_kp_number 45 --total_obj_number 1 --output_base ../psp_annotated_ --sixd_base ../psp_base/ --train_split 800
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../ape_gen_annotated_ --sixd_base ../sixd_base_gen/
+
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../ape_gen_annotated_ --sixd_base ../sixd_base_gen/ --train_split 1000
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../psp_base_annotated_ --sixd_base ../psp_base/ --train_split 2000
+
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 49 --total_obj_number 1 --output_base ../kuka_base_annotated_ --sixd_base ../kuka_base/ --train_split 5500
 
 
 python sspdToYoloConverter.py
