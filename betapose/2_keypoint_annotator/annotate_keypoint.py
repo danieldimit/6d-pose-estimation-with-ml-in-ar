@@ -385,8 +385,8 @@ if __name__ == '__main__':
 	print(int(all_imgs / opt.batch_size) + 1)
 	for i in range(int(len(os.listdir(sixd_base + "/test/" + format(opt.obj_id, '02') + "/rgb")) / opt.batch_size) + 1):
 		offset = i * opt.batch_size
+		output_counter = offset
 		bench = load_sixd(sixd_base, seq=OBJECT_CHOSEN, offset=offset, max=all_imgs)	#Modified, take care!
-		# bench = load_sixd(sixd_base, seq=2)
 		print("Loading finished!")
 		gene_all_files(bench.frames, cam_K, models, kpmodels, offset, all_imgs)
 
