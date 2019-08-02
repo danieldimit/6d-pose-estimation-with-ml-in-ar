@@ -153,7 +153,7 @@ def initialize():
     sys.stdout.flush() # for multithread displaying
     image_loader = ImageLoader()
     det_loader = DetectionLoader(image_loader, './betapose/yolo/cfg/yolo-psp-single.cfg',
-                                 './betapose/weights/yolo-psp-single_1200.weights').start()
+                                 './betapose/weights/yolo.weights').start()
     det_processor = DetectionProcessor(det_loader).start()
     
     # Load pose model here

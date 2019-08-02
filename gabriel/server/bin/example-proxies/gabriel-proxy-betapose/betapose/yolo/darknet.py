@@ -310,6 +310,7 @@ class Darknet(nn.Module):
         detection = DetectionLayer(anchors, num_classes, self.reso, ignore_thresh)
         module.add_module('detection_{}'.format(idx), detection)
 
+      print(block['type'])
       module_list.append(module)
       in_channels = out_channels
       out_channels_list.append(out_channels)

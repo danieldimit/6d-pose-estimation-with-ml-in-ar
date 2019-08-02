@@ -51,9 +51,15 @@ def project_obj_onto_img(image, corners, R_p, t_p, i_c, bbs):
 		proj_2d_p   = compute_projection(corners, Rt, i_c)
 		proj_2d_p = proj_2d_p.astype(int)
 
+		proj_2d_p[1,proj_2d_p[1] >= 480] = 479
+		proj_2d_p[0,proj_2d_p[0] >= 640] = 639
+
+		proj_2d_p[1,proj_2d_p[1] < 0] = 0
+		proj_2d_p[0,proj_2d_p[0] < 0] = 0
 
 
-		# Make empty black image
+
+		# Draw points
 		blue = [255,0,0]
 		image[proj_2d_p[1,:],proj_2d_p[0,:]]=blue
 
