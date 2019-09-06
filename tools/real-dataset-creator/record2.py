@@ -14,9 +14,9 @@ Using librealsense SDK 2.0 with pyrealsense2 for SR300 and D series cameras
 # record for 40s after a 5s count down
 # or exit the recording earlier by pressing q
 
-RECORD_LENGTH = 40
+RECORD_LENGTH = 20
 
-import png
+
 import pyrealsense2 as rs
 import json
 import logging
@@ -26,6 +26,7 @@ import cv2
 import time
 import os
 import sys
+import png
 # from config.DataAcquisitionParameters import DEPTH_THRESH
 
 def make_directories(folder):
@@ -50,6 +51,8 @@ if __name__ == "__main__":
 
     FileName=0
     make_directories(folder)
+    print(len(os.listdir(folder+'JPEGImages')))
+    FileName=len(os.listdir(folder+'JPEGImages'))
     
     pipeline = rs.pipeline()
     config = rs.config()
