@@ -1,3 +1,5 @@
+This project is forked from - https://github.com/sjtuytc/betapose
+
 #	Betapose: Estimating 6D Pose From Localizing Designated Surface Keypoints
 Please refer to our paper for detailed explanation. Arxiv Link is [here](https://arxiv.org/abs/1812.01387).
 In the following, `ROOT` refers to the folder containing this README file.

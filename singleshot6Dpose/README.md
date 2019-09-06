@@ -1,3 +1,5 @@
+This project is forked from - https://github.com/microsoft/singleshotpose
+
 # SINGLESHOTPOSE
  
 This is the code for the following paper:
