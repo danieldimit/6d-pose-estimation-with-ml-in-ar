@@ -20,21 +20,24 @@ class BoundingBox:
 
 	def add_clicked_point(self, point):
 		self.marked_points.append(point)
-		if (len(self.marked_points) == 4):
+		if (len(self.marked_points) == 8):
 			self.marked_points = np.asarray(self.marked_points, dtype=float).T
-			self.marked_points[0] = self.marked_points[0] / self.w
-			self.marked_points[1] = self.marked_points[1] / self.h
+			self.marked_points[0] = self.marked_points[0]
+			self.marked_points[1] = self.marked_points[1]
 			all_points = np.array(np.transpose(self.corners3D[:3, :]), dtype='float32')
 			lower_points = np.array([all_points[0], all_points[2], all_points[4], all_points[6]])
-			R, t = pnp(lower_points, self.marked_points.T, np.array(self.i_c, dtype='float32'))
+			R, t = pnp(all_points, self.marked_points.T, np.array(self.i_c, dtype='float32'))
+			Rt = np.append(R, t, axis=1)
+			proj_2d_p = compute_projection(self.corners3D, Rt, self.i_c)
 			self.marked_points = []
-			return rotationMatrixToEulerAngles(R), t.astype(int)
+			return rotationMatrixToEulerAngles(R), t
 		return None
 		
 
 	def draw_on_img(self, image, Rt):
 		image_tmp = image.copy()
 		proj_2d_p = compute_projection(self.corners3D, Rt, self.i_c)
+		
 		proj_2d_p = proj_2d_p.astype(int)
 
 		for c in self.marked_points:

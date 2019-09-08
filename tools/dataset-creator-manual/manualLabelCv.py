@@ -11,16 +11,18 @@ refPt = []
 files = []
 file_counter = 0
 angle_max = 720000000
+angle_full_range = 6.4
 t_range = 4000
 t_grnlrty = 200
 image = None
 clone = None
 
+
 t_start = int(t_range / 2)
-angle_subdiv = angle_max/6.4
+angle_subdiv = angle_max/angle_full_range
 
 def move_bounding_box(x=0):
-	global bb_calc, image, clone
+	global bb_calc, image, clone, a_x, a_y, a_z, t_x, t_y, t_z
 	R = eulerAnglesToRotationMatrix([a_x/(angle_subdiv),a_y/(angle_subdiv),a_z/(angle_subdiv)])
 	t = np.array([((t_x-(t_range/2))/t_grnlrty,(t_y-(t_range/2))/t_grnlrty,(t_z-(t_range/2))/t_grnlrty)], dtype=float).T
 	Rt = np.append(R, t, axis=1)
@@ -29,8 +31,8 @@ def move_bounding_box(x=0):
 
 def click_and_crop(event, x, y, flags, param):
 	# grab references to the global variables
-	global refPt, image, clone
- 
+	global refPt, image, clone, a_x, a_y, a_z, t_x, t_y, t_z
+
 	# if the left mouse button was clicked, record the starting
 	# (x, y) coordinates and indicate that cropping is being
 	# performed
@@ -38,23 +40,23 @@ def click_and_crop(event, x, y, flags, param):
 		refPt = [(x, y)]
 		result = bb_calc.add_clicked_point(np.array([x, y]))
 		if (result is not None):
-			print(result)
-			angles = result[0] + t_start
-			#t = result[1] * t_grnlrty + t_start
-			t = result[1]
-			print(t)
-			t_x = int(t[0][0]/t_grnlrty) + t_start
-			t_y = int(t[1][0]/t_grnlrty)  + t_start
-			t_z = int(t[2][0]/t_grnlrty)  + t_start
+			angles = (result[0] * angle_subdiv).astype(int)
+			t = (result[1] * t_grnlrty + t_start).astype(int)
+			t_x = t[0][0]
+			t_y = t[1][0]
+			t_z = t[2][0]
 			cv2.setTrackbarPos('t_x', 'image', t_x)
 			cv2.setTrackbarPos('t_y', 'image', t_y)
 			cv2.setTrackbarPos('t_z', 'image', t_z)
 
-			cv2.setTrackbarPos('R_x', 'image', int(angles[0]))
-			cv2.setTrackbarPos('R_y', 'image', int(angles[1]))
-			cv2.setTrackbarPos('R_z', 'image', int(angles[2]))
-
+			a_x = angles[0]
+			a_y = angles[1]
+			a_z = angles[2]
+			cv2.setTrackbarPos('R_x', 'image', a_x)
+			cv2.setTrackbarPos('R_y', 'image', a_y)
+			cv2.setTrackbarPos('R_z', 'image', a_z)
 		move_bounding_box()
+		
 		
 
 # construct the argument parser and parse the arguments
