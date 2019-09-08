@@ -1,4 +1,3 @@
-# import the necessary packages
 import argparse
 import cv2
 import os
@@ -17,17 +16,16 @@ t_grnlrty = 200
 image = None
 clone = None
 
-
+# Variables dependent on the settings
 t_start = int(t_range / 2)
 angle_subdiv = angle_max/angle_full_range
 
-def move_bounding_box(x=0):
+def move_bounding_box(save=False):
 	global bb_calc, image, clone, a_x, a_y, a_z, t_x, t_y, t_z
 	R = eulerAnglesToRotationMatrix([a_x/(angle_subdiv),a_y/(angle_subdiv),a_z/(angle_subdiv)])
 	t = np.array([((t_x-(t_range/2))/t_grnlrty,(t_y-(t_range/2))/t_grnlrty,(t_z-(t_range/2))/t_grnlrty)], dtype=float).T
-	Rt = np.append(R, t, axis=1)
 	image_tmp = clone.copy()
-	image = bb_calc.draw_on_img(image_tmp, Rt)
+	image = bb_calc.draw_on_img(image_tmp, R, t, save=save)
 
 def click_and_crop(event, x, y, flags, param):
 	# grab references to the global variables
@@ -75,7 +73,6 @@ clone = image.copy()
 cv2.namedWindow("image")
 cv2.setMouseCallback("image", click_and_crop)
 
-
 cv2.createTrackbar('t_x','image',t_start,t_range,move_bounding_box)
 cv2.createTrackbar('t_y','image',t_start,t_range,move_bounding_box)
 cv2.createTrackbar('t_z','image',t_start,t_range,move_bounding_box)
@@ -97,12 +94,9 @@ while True:
 	a_x = cv2.getTrackbarPos('R_x','image')
 	a_y = cv2.getTrackbarPos('R_y','image')
 	a_z = cv2.getTrackbarPos('R_z','image')
- 
-	# if the 'r' key is pressed, reset the cropping region
-	if key == ord("r"):
-		image = clone.copy()
 
 	if key == ord("n"):
+		move_bounding_box(save=True)
 		file_counter += 1
 		image = cv2.imread(os.path.join(args["imagesFolder"], files[file_counter]))
 		clone = image.copy()
@@ -111,13 +105,6 @@ while True:
 	# if the 'c' key is pressed, break from the loop
 	elif key == ord("c"):
 		break
- 
-# if there are two reference points, then crop the region of interest
-# from teh image and display it
-if len(refPt) == 2:
-	roi = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
-	cv2.imshow("ROI", roi)
-	cv2.waitKey(0)
  
 # close all open windows
 cv2.destroyAllWindows()
