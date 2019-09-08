@@ -73,6 +73,7 @@ class BoundingBox:
 		if (save == True):
 			if not os.path.exists('./labels'):
 				os.makedirs('./labels')
+			self.created_i = len(sorted(os.listdir("./labels")))
 			f_s = open(os.path.join('./labels',format(self.created_i, '06') + '.txt'), "w+")
 			f_b = open('gt.yml', "a+")
 			f_b_c = open('info.yml', "a+")

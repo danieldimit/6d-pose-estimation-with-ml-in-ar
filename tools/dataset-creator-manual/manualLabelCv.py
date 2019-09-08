@@ -68,6 +68,8 @@ bb_calc = BoundingBox(args["mesh"])
 
 # load the image, clone it, and setup the mouse callback function
 files = sorted(os.listdir(args["imagesFolder"]))
+if os.path.exists('./labels'):
+	file_counter = len(sorted(os.listdir("./labels")))
 image = cv2.imread(os.path.join(args["imagesFolder"], files[file_counter]))
 clone = image.copy()
 cv2.namedWindow("image")
@@ -97,7 +99,7 @@ while True:
 
 	if key == ord("n"):
 		move_bounding_box(save=True)
-		file_counter += 1
+		file_counter = len(sorted(os.listdir("./labels")))
 		image = cv2.imread(os.path.join(args["imagesFolder"], files[file_counter]))
 		clone = image.copy()
 		move_bounding_box()
