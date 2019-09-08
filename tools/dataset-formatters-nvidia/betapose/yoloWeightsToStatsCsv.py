@@ -3,7 +3,7 @@ import subprocess, os
 weights_dir = '/home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/backup/psp/'
 darknet_dir = '/home/daniel/Documents/Github/darknet'
 
-cfg_file = '/home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/cfg/yolo-linemod-single.cfg'
+cfg_file = '/home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/cfg/yolo-psp-single.cfg'
 data_file = '/home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/data/psp.data'
 #os.chdir()
 os.chdir(darknet_dir)
