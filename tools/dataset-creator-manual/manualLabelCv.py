@@ -48,8 +48,17 @@ def click_and_crop(event, x, y, flags, param):
 			cv2.setTrackbarPos('t_z', 'image', t_z)
 
 			a_x = angles[0]
+			if a_x < 0:
+				print('ding')
+				a_x = angle_max + a_x
 			a_y = angles[1]
+			if a_y < 0:
+				print('ding')
+				a_y = angle_max + a_y
 			a_z = angles[2]
+			if a_z < 0:
+				print('ding')
+				a_z = angle_max + a_z
 			cv2.setTrackbarPos('R_x', 'image', a_x)
 			cv2.setTrackbarPos('R_y', 'image', a_y)
 			cv2.setTrackbarPos('R_z', 'image', a_z)
@@ -70,6 +79,10 @@ bb_calc = BoundingBox(args["mesh"])
 files = sorted(os.listdir(args["imagesFolder"]))
 if os.path.exists('./labels'):
 	file_counter = len(sorted(os.listdir("./labels")))
+	if (len(files) <= file_counter):
+		print('All images seem to have labels. Exiting...')
+		print('If this is not the case empty the "labels" folder and start again.')
+		exit()
 image = cv2.imread(os.path.join(args["imagesFolder"], files[file_counter]))
 clone = image.copy()
 cv2.namedWindow("image")
@@ -100,9 +113,12 @@ while True:
 	if key == ord("n"):
 		move_bounding_box(save=True)
 		file_counter = len(sorted(os.listdir("./labels")))
-		image = cv2.imread(os.path.join(args["imagesFolder"], files[file_counter]))
-		clone = image.copy()
-		move_bounding_box()
+		if (len(files) <= file_counter):
+			break
+		else:
+			image = cv2.imread(os.path.join(args["imagesFolder"], files[file_counter]))
+			clone = image.copy()
+			move_bounding_box()
  
 	# if the 'c' key is pressed, break from the loop
 	elif key == ord("c"):
