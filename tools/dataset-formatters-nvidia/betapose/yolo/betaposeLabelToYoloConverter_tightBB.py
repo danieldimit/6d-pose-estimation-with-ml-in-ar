@@ -22,10 +22,10 @@ def createTestAndTrainFiles(counter):
     for i in range(counter):
         img_type = ".jpg"
         if (i in test):
-            f_test.write('/JPEGImages/' + format(i, '06') + img_type + " \n")
+            f_test.write('/JPEGImages/' + format(i, '06') + img_type + "\n")
         else:
-            f_train.write('/JPEGImages/' + format(i, '06') + img_type + " \n")
-            f_train_range.write(str(i) + " \n")
+            f_train.write('/JPEGImages/' + format(i, '06') + img_type + "\n")
+            f_train_range.write(str(i) + "\n")
 
     f_test.close()
     f_train.close()
