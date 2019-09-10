@@ -8,6 +8,9 @@ import cv2
 from utils import *
 from distutils.dir_util import copy_tree
 
+w = 640
+h = 480
+
 def splitAndCastToFloat(line):
 	line = line.split()
 	line = line[0:3]
@@ -15,6 +18,7 @@ def splitAndCastToFloat(line):
 
 
 def getBBOfPlyObject(gt_folder, ply_name):
+	global w, h
 
 	with open(gt_folder + '/' + ply_name) as f:
 		content = f.readlines()
@@ -60,6 +64,10 @@ def getBBOfPlyObject(gt_folder, ply_name):
 								img_num = int(result['image_id'].split('.')[0])
 								R = np.array(result['cam_R']).reshape(3, 3)
 								Rt = np.append(R, np.array([result['cam_t']]).T, axis=1)
+								kps = np.array(result['keypoints'])
+								bbox = np.array(result['bbpx']).astype(int)
+								pt_num = int(len(kps)/3)
+								kps = kps.reshape(pt_num,3)
 
 								img_infos = yaml_gt[img_num][0]
 								R_gt = np.array(img_infos['cam_R_m2c']).reshape(3, 3)
@@ -75,15 +83,25 @@ def getBBOfPlyObject(gt_folder, ply_name):
 
 								proj_2d_p = compute_projection(corners, Rt, i_c)
 								proj_2d_p = proj_2d_p.astype(int)
-								print(proj_2d_gt)
-								print(proj_2d_p)
+								
 								# Make empty black image
 								image = cv2.imread(gt_folder + '/rgb/' + format(img_num, '04') + '.png', 1)
 								height, width, channels = image.shape
 								red = [0, 0, 255]
 								blue = [255, 0, 0]
+
+								proj_2d_p[1, proj_2d_p[1] < 0] = 0
+								proj_2d_p[0, proj_2d_p[0] < 0] = 0
+								proj_2d_p[1, proj_2d_p[1] >= h] = h-1
+								proj_2d_p[0, proj_2d_p[0] >= w] = w-1
+
 								image[proj_2d_p[1, :], proj_2d_p[0, :]] = blue
 								image[proj_2d_gt[1, :], proj_2d_gt[0, :]] = red
+
+								cv2.rectangle(image,(bbox[0], bbox[1]),(bbox[2], bbox[3]),(0,255,0),3)
+								for c in kps:
+									if (c[2] > 0.2):
+										image[int(c[1]), int(c[0])]=(0,255,0)
 
 								# Draw lower base of 3d bb
 								pts = np.array([[proj_2d_p[0, 0], proj_2d_p[1, 0]], [proj_2d_p[0, 2], proj_2d_p[1, 2]],
