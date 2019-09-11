@@ -65,7 +65,7 @@ def getBBOfPlyObject(gt_folder, ply_name):
 								R = np.array(result['cam_R']).reshape(3, 3)
 								Rt = np.append(R, np.array([result['cam_t']]).T, axis=1)
 								kps = np.array(result['keypoints'])
-								bbox = np.array(result['bbpx']).astype(int)
+								bbox = np.array(result['bbox']).astype(int)
 								pt_num = int(len(kps)/3)
 								kps = kps.reshape(pt_num,3)
 
