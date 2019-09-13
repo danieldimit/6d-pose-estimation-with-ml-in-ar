@@ -20,6 +20,8 @@ def pnp(points_3D, points_2D, cameraMatrix):
     except:
         distCoeffs = np.zeros((8, 1), dtype='float32')
 
+    print(points_3D.shape[0])
+    print(points_2D.shape[0])
     assert points_3D.shape[0] == points_2D.shape[0], 'points 3D and points 2D must have same number of vertices'
     # embed()
     _, R_exp, t = cv2.solvePnP(points_3D,

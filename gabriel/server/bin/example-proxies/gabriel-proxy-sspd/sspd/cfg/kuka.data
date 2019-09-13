@@ -1,0 +1,3 @@
+mesh = sspd/3d_models/kuka.ply
+name = kuka
+diam = 0.6536639

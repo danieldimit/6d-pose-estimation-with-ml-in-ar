@@ -53,18 +53,6 @@ def initialize_network(datacfg, cfgfile, weightfile):
     # print("Vertices are:\n {} Shape: {} Type: {}".format(vertices,vertices.shape, type(vertices)))
 
     corners3D = get_3D_corners(vertices)
-    feet_cm = 30.48  # 1 ft = 30.48 cm
-    corners3D[0] = np.array(
-        [-11 * feet_cm / 2.0, -11 * feet_cm / 2.0, -11 * feet_cm / 2.0, -11 * feet_cm / 2.0, 11 * feet_cm / 2.0,
-         11 * feet_cm / 2.0, 11 * feet_cm / 2.0, 11 * feet_cm / 2.0])
-    corners3D[1] = np.array(
-        [-feet_cm / 2.0, -feet_cm / 2.0, feet_cm / 2.0, feet_cm / 2.0, -feet_cm / 2.0, -feet_cm / 2.0, feet_cm / 2.0,
-         feet_cm / 2.0])
-    corners3D[2] = np.array(
-        [-11 * feet_cm / 2.0, 11 * feet_cm / 2.0, -11 * feet_cm / 2.0, 11 * feet_cm / 2.0, -11 * feet_cm / 2.0,
-         11 * feet_cm / 2.0, -11 * feet_cm / 2.0, 11 * feet_cm / 2.0])
-    # print("3D Corners are:\n {} Shape: {} Type: {}".format(corners3D,corners3D.shape, type(corners3D)))
-
     diam = float(options['diam'])
 
     # now configure camera intrinsics
@@ -86,7 +74,7 @@ def initialize_network(datacfg, cfgfile, weightfile):
 # @torch.no_grad
 def evaluate_img(img):
     global model, test_height, test_width, conf_thresh, num_classes
-
+    i_c = np.array([[320., 0.0, 320.], [0.0, 320., 240.], [0.0, 0.0, 1.0]])
 
     # Reload Original img
     imgCp = img.copy()
@@ -168,6 +156,28 @@ def evaluate_img(img):
     t4 = time.time()
 
     # ******************************************#
+    #  DISPLAY BOUNDING CUBE CALCULATED BY PNP  #
+    # ******************************************#
+    Rt = np.append(R_pr, t_pr, axis=1)
+    proj_2d_pnp = compute_projection(corners3D, Rt, i_c)
+    sum_x = np.mean(proj_2d_pnp[0])
+    sum_y = np.mean(proj_2d_pnp[1])
+    proj_2d_pnp = np.concatenate((np.array([[sum_x,sum_y]]), proj_2d_pnp.T), axis=0)
+    imgCp = draw_3d_bounding_box(imgCp, corners2D_pr, (255, 0, 255), 2, 2)
+    imgCp = draw_3d_bounding_box(imgCp, proj_2d_pnp, (0,255,0), 3, 3)
+    return [imgCp, proj_2d_pnp[0].tolist(), proj_2d_pnp[1:].tolist(), R_pr.tolist(), t_pr.tolist()]
+
+    # print("Rotation: {}".format(R_pr))
+    # print("Translation: {}".format(t_pr))
+    # print(" Predict time: {}".format(t2 - t1))
+    # print(" 2D Points extraction time: {}".format(t3 - t2))
+    # print(" Pose calculation time: {}:".format(t4 - t3))
+    # print(" Total time: {}".format(t4 - t1))
+    # print("Press any key to close.")
+
+        
+def draw_3d_bounding_box(imgCp, corners2D_pr, bb_3d_color, line_point, circle_diam):
+        # ******************************************#
     #   DISPLAY IMAGE WITH BOUNDING CUBE        #
     # ******************************************#
 
@@ -177,7 +187,7 @@ def evaluate_img(img):
         col1 = 28 * i
         col2 = 255 - (28 * i)
         col3 = np.random.randint(0, 256)
-        cv2.circle(imgCp, (x, y), 3, (col1, col2, col3), -1)
+        cv2.circle(imgCp, (x, y), circle_diam, (col1, col2, col3), -1)
         cv2.putText(imgCp, str(i), (int(x) + 5, int(y) + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (col1, col2, col3), 1)
 
     # Get each predicted point and the centroid
@@ -193,35 +203,23 @@ def evaluate_img(img):
 
     # Draw cube lines around detected object
     # draw front face
-    line_point = 2
-    cv2.line(imgCp, (p1[0], p1[1]), (p2[0], p2[1]), (0, 255, 0), line_point)
-    cv2.line(imgCp, (p2[0], p2[1]), (p4[0], p4[1]), (0, 255, 0), line_point)
-    cv2.line(imgCp, (p4[0], p4[1]), (p3[0], p3[1]), (0, 255, 0), line_point)
-    cv2.line(imgCp, (p3[0], p3[1]), (p1[0], p1[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p1[0], p1[1]), (p2[0], p2[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p2[0], p2[1]), (p4[0], p4[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p4[0], p4[1]), (p3[0], p3[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p3[0], p3[1]), (p1[0], p1[1]), bb_3d_color, line_point)
 
     # draw back face
-    cv2.line(imgCp, (p5[0], p5[1]), (p6[0], p6[1]), (0, 255, 0), line_point)
-    cv2.line(imgCp, (p7[0], p7[1]), (p8[0], p8[1]), (0, 255, 0), line_point)
-    cv2.line(imgCp, (p6[0], p6[1]), (p8[0], p8[1]), (0, 255, 0), line_point)
-    cv2.line(imgCp, (p5[0], p5[1]), (p7[0], p7[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p5[0], p5[1]), (p6[0], p6[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p7[0], p7[1]), (p8[0], p8[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p6[0], p6[1]), (p8[0], p8[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p5[0], p5[1]), (p7[0], p7[1]), bb_3d_color, line_point)
 
     # draw right face
-    cv2.line(imgCp, (p2[0], p2[1]), (p6[0], p6[1]), (0, 255, 0), line_point)
-    cv2.line(imgCp, (p1[0], p1[1]), (p5[0], p5[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p2[0], p2[1]), (p6[0], p6[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p1[0], p1[1]), (p5[0], p5[1]), bb_3d_color, line_point)
 
     # draw left face
-    cv2.line(imgCp, (p3[0], p3[1]), (p7[0], p7[1]), (0, 255, 0), line_point)
-    cv2.line(imgCp, (p4[0], p4[1]), (p8[0], p8[1]), (0, 255, 0), line_point)
+    cv2.line(imgCp, (p3[0], p3[1]), (p7[0], p7[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p4[0], p4[1]), (p8[0], p8[1]), bb_3d_color, line_point)
 
-    # print("Rotation: {}".format(R_pr))
-    # print("Translation: {}".format(t_pr))
-    # print(" Predict time: {}".format(t2 - t1))
-    # print(" 2D Points extraction time: {}".format(t3 - t2))
-    # print(" Pose calculation time: {}:".format(t4 - t3))
-    # print(" Total time: {}".format(t4 - t1))
-    # print("Press any key to close.")
-    #
-    return [imgCp, center.tolist() ,
-            [p2.tolist(), p3.tolist(), p4.tolist(), p5.tolist(), p6.tolist(), p7.tolist(), p8.tolist()],
-            R_pr.tolist(), t_pr.tolist()]
-        
+    return imgCp

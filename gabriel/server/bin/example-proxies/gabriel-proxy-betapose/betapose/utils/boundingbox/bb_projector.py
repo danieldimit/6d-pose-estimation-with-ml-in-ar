@@ -43,7 +43,55 @@ def get_ply_bb_corners(ply_model):
 		corners = np.array(np.meshgrid(minsMaxs[0, :], minsMaxs[1, :], minsMaxs[2, :])).T.reshape(-1, 3)
 		return corners
 
-def project_obj_onto_img(image, corners, R_p, t_p, i_c, bbs):
+def draw_3d_bounding_box(imgCp, corners2D_pr, bb_3d_color, line_point):
+        # ******************************************#
+    #   DISPLAY IMAGE WITH BOUNDING CUBE        #
+    # ******************************************#
+
+    # draw each predicted 2D point
+    for i, (x, y) in enumerate(corners2D_pr):
+        # get colors to draw the lines
+        col1 = 28 * i
+        col2 = 255 - (28 * i)
+        col3 = np.random.randint(0, 256)
+        cv2.circle(imgCp, (x, y), 3, (col1, col2, col3), -1)
+        cv2.putText(imgCp, str(i), (int(x) + 5, int(y) + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (col1, col2, col3), 1)
+
+    # Get each predicted point and the centroid
+    p1 = corners2D_pr[1]
+    p2 = corners2D_pr[2]
+    p3 = corners2D_pr[3]
+    p4 = corners2D_pr[4]
+    p5 = corners2D_pr[5]
+    p6 = corners2D_pr[6]
+    p7 = corners2D_pr[7]
+    p8 = corners2D_pr[8]
+    center = corners2D_pr[0]
+
+    # Draw cube lines around detected object
+    # draw front face
+    cv2.line(imgCp, (p1[0], p1[1]), (p2[0], p2[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p2[0], p2[1]), (p4[0], p4[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p4[0], p4[1]), (p3[0], p3[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p3[0], p3[1]), (p1[0], p1[1]), bb_3d_color, line_point)
+
+    # draw back face
+    cv2.line(imgCp, (p5[0], p5[1]), (p6[0], p6[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p7[0], p7[1]), (p8[0], p8[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p6[0], p6[1]), (p8[0], p8[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p5[0], p5[1]), (p7[0], p7[1]), bb_3d_color, line_point)
+
+    # draw right face
+    cv2.line(imgCp, (p2[0], p2[1]), (p6[0], p6[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p1[0], p1[1]), (p5[0], p5[1]), bb_3d_color, line_point)
+
+    # draw left face
+    cv2.line(imgCp, (p3[0], p3[1]), (p7[0], p7[1]), bb_3d_color, line_point)
+    cv2.line(imgCp, (p4[0], p4[1]), (p8[0], p8[1]), bb_3d_color, line_point)
+
+    return imgCp	
+
+def project_obj_onto_img(image, corners, R_p, t_p, i_c, bbs, kps):
 	if (R_p != []):
 		corners = np.c_[corners, np.ones((len(corners), 1))].transpose()
 
@@ -57,26 +105,19 @@ def project_obj_onto_img(image, corners, R_p, t_p, i_c, bbs):
 		proj_2d_p[1,proj_2d_p[1] < 0] = 0
 		proj_2d_p[0,proj_2d_p[0] < 0] = 0
 
+		# Draw all KPs
+		for c in kps:
+			cv2.circle(image, (int(c[0]), int(c[1])), 2, (255, 0, 255), -1)
 
+		# Draw bounding box resulting after PNP
+		sum_x = np.mean(proj_2d_p[0])
+		sum_y = np.mean(proj_2d_p[1])
+		proj_2d_p = np.concatenate((np.array([[sum_x,sum_y]]), proj_2d_p.T), axis=0).astype(int)
+		image = draw_3d_bounding_box(image, proj_2d_p, (0,255,0), 3)
 
-		# Draw points
-		blue = [255,0,0]
-		image[proj_2d_p[1,:],proj_2d_p[0,:]]=blue
-
-		# Draw lower base of 3d bb
-		pts = np.array([[proj_2d_p[0,0], proj_2d_p[1,0]],[proj_2d_p[0,2], proj_2d_p[1,2]],[proj_2d_p[0,3], proj_2d_p[1,3]],[proj_2d_p[0,1], proj_2d_p[1,1]]], np.int32)
-		cv2.polylines(image,[pts],True,(0,255,255))
-		
-		# Draw the front of the bounding box
-		pts = np.array([[proj_2d_p[0,3], proj_2d_p[1,3]],[proj_2d_p[0,7], proj_2d_p[1,7]],[proj_2d_p[0,6], proj_2d_p[1,6]],[proj_2d_p[0,2], proj_2d_p[1,2]]], np.int32)
-		cv2.polylines(image,[pts],True,(0,255,255))
-
-		# Draw upper base of 3d bb
-		pts = np.array([[proj_2d_p[0,4], proj_2d_p[1,4]],[proj_2d_p[0,6], proj_2d_p[1,6]],[proj_2d_p[0,7], proj_2d_p[1,7]],[proj_2d_p[0,5], proj_2d_p[1,5]]], np.int32)
-		cv2.polylines(image,[pts],True,(0,255,255))
-
+	# Draw YOLO bounding box
 	for bb in bbs:
 		bb[bb < 0] = 0
 		cv2.rectangle(image, (bb[0], bb[1]),
-					  (bb[2], bb[3]), (0, 255, 0), 3)
+					  (bb[2], bb[3]), (255, 0, 0), 1)
 	return image

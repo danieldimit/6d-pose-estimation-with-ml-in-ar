@@ -81,9 +81,12 @@ def evaluate_img(img, frame):
     R_p = result['cam_R']
     t_p = result['cam_t']
     bbs = result['boxes']
+    kps = []
+    if (result['result']):
+        kps = np.array(result['result'][0]['keypoints']).astype(int)
 
 
-    img_with_projection = project_obj_onto_img(orig_img[0], ply_model_corners, R_p, t_p, cam_K, bbs)
+    img_with_projection = project_obj_onto_img(orig_img[0], ply_model_corners, R_p, t_p, cam_K, bbs, kps)
     return [img_with_projection, R_p, t_p]
 ''' 
     Load cam, model and KP model*******************************************************
@@ -105,7 +108,8 @@ def load_sixd_models(base_path, obj_id):
     bench = Benchmark()
     bench.scale_to_meters = 1 # Unit in model is mm
     # You need to give camera info manually here.
-    bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
+    #bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
+    bench.cam = np.array([[320., 0.0, 320.], [0.0, 320., 240.], [0.0, 0.0, 1.0]])
     
     #collect model info
     model_info = load_yaml(os.path.join(base_path, 'models', 'models_info.yml'))
@@ -152,7 +156,7 @@ def initialize():
     print('Loading YOLO model..')
     sys.stdout.flush() # for multithread displaying
     image_loader = ImageLoader()
-    det_loader = DetectionLoader(image_loader, './betapose/yolo/cfg/yolo-psp-single.cfg',
+    det_loader = DetectionLoader(image_loader, './betapose/yolo/cfg/yolo-kuka-single.cfg',
                                  './betapose/weights/yolo.weights').start()
     det_processor = DetectionProcessor(det_loader).start()
     
