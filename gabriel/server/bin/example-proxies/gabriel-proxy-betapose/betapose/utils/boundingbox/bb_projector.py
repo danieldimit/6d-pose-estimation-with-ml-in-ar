@@ -91,7 +91,7 @@ def draw_3d_bounding_box(imgCp, corners2D_pr, bb_3d_color, line_point):
 
     return imgCp	
 
-def project_obj_onto_img(image, corners, R_p, t_p, i_c, bbs, kps):
+def project_obj_onto_img(image, corners, R_p, t_p, i_c, bbs, kps, score):
 	if (R_p != []):
 		corners = np.c_[corners, np.ones((len(corners), 1))].transpose()
 
@@ -120,4 +120,6 @@ def project_obj_onto_img(image, corners, R_p, t_p, i_c, bbs, kps):
 		bb[bb < 0] = 0
 		cv2.rectangle(image, (bb[0], bb[1]),
 					  (bb[2], bb[3]), (255, 0, 0), 1)
+
+	cv2.putText(image, f'{score:.3f}', (640 - 50, 480 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1)
 	return image

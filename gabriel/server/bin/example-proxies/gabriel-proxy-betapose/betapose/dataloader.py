@@ -345,9 +345,30 @@ class DataWriter:
                             kp_score = np.delete(kp_score,delidx)
                             kp_2d = np.delete(kp_2d,delidx, axis=0)
                             kp_3d = np.delete(kp_3d,delidx, axis=0)
-                        # embed()
-                        R, t = pnp(kp_3d, kp_2d, self.cam_K)
+                        
+                        # Only keypoints with score bigger than 0.5
+                        kp_score_filter = np.copy(kp_score).flatten() > 0.5
+                        kp_2d_cp = kp_2d[kp_score_filter]
+                        kp_3d_cp = kp_3d[kp_score_filter]
+                        
+                        if (len(kp_2d_cp) <= 3):
+                            # Only the 4 points with highest probability
+                            kp_score_cp = np.copy(kp_score).flatten()
+                            kp_score_cp.sort()
+                            print(kp_score_cp[-10])
+                            kp_score_filter = kp_score.flatten() >= kp_score_cp[-10]
+                            kp_2d_cp = kp_2d[kp_score_filter]
+                            kp_3d_cp = kp_3d[kp_score_filter]
+
+                        R, t = pnp(kp_3d_cp, kp_2d_cp, self.cam_K)
                         result.update({'cam_R':R, 'cam_t':t})
+                        result['result'][0].update({'keypoints':kp_2d_cp})
+                        result['result'][0].update({'kp_score':kp_score[kp_score_filter]})
+
+                        
+                        #print(len(kp_2d))
+
+                        
                     else:
                         result.update({'cam_R':[], 'cam_t':[]})
                     self.final_result.append(result)
