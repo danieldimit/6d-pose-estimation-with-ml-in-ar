@@ -2,7 +2,7 @@ import numpy as np
 import cv2, sys
 
 def readAndProjectYoloLabel(name):
-	img = cv2.imread(name + '.png', 1)
+	img = cv2.imread(name + '.jpg', 1)
 	height, width, channels = img.shape
 
 	with open(name + '.txt') as f:
