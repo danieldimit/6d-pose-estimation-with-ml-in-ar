@@ -22,11 +22,6 @@ def valid():
     meshname     = 'kuka.ply'
 
     # Parameters
-    prefix       = 'results'
-    gpus         = '0'     # Specify which gpus to use
-    test_width   = 544
-    test_height  = 544
-    save            = True
     testtime        = True
     use_cuda        = True
     num_classes     = 1
@@ -117,8 +112,6 @@ def valid():
         Rt_pr        = np.concatenate((R_pr, t_pr), axis=1)
         proj_2d_gt   = compute_projection(vertices, Rt_gt, internal_calibration)
         proj_2d_pred = compute_projection(vertices, Rt_pr, internal_calibration) 
-        print(proj_2d_gt)
-        print(proj_2d_pred)
         norm         = np.linalg.norm(proj_2d_gt - proj_2d_pred, axis=0)
         pixel_dist   = np.mean(norm)
         errs_2d.append(pixel_dist)
@@ -159,5 +152,8 @@ def valid():
 
 if __name__ == '__main__':
     import sys
+    # the model ply must be in m
+    # the betapose t must be in m
+    # the kpd model ply must be in mm
     valid()
     
