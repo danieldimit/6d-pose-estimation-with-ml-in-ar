@@ -15,6 +15,7 @@ from KPD.src.main_fast_inference import *
 import yaml
 import os
 import sys
+import math
 import pickle
 from tqdm import tqdm
 import time
@@ -56,7 +57,8 @@ def load_sixd_models(base_path, obj_id):
     bench = Benchmark()
     bench.scale_to_meters = 1 # Unit in model is mm
     # You need to give camera info manually here.
-    bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
+    #bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
+    bench.cam = np.array([[320., 0.0, 320.], [0.0, 320, 240.], [0.0, 0.0, 1.0]])
     
     #collect model info
     model_info = load_yaml(os.path.join(base_path, 'models', 'models_info.yml'))
@@ -88,7 +90,7 @@ if __name__ == "__main__":
     print ("Betapose begin running now.")
     obj_id = 1
     print("Test seq", obj_id)
-    sixd_base = "../sixd_base"
+    sixd_base = opt.sixd_base
     sixd_bench = load_sixd_models(sixd_base, obj_id)
     cam_K = sixd_bench.cam
     models = sixd_bench.models
@@ -123,7 +125,7 @@ if __name__ == "__main__":
     # Load pose model here
     pose_dataset = Mscoco() # is_train, res, joints, rot_factor
     if args.fast_inference:
-        pose_model = InferenNet_fast(4 * 1 + 1, obj_id, pose_dataset)
+        pose_model = InferenNet_fast(4 * 1 + 1, obj_id, pose_dataset, opt.kpdWeights)
     else:
         pose_model = InferenNet(4 * 1 + 1, pose_dataset)
     pose_model.cuda()
@@ -209,6 +211,7 @@ if __name__ == "__main__":
     adds = []
     proj_2d_errs = []
     ious = []
+    np.set_printoptions(suppress=True)
     # for f in tqdm(final_result, ncols=80, ascii=True):
     for idx, f in enumerate(final_result):
         imgname = f['imgname']
@@ -224,11 +227,11 @@ if __name__ == "__main__":
         gt_bbox = ground_truths[2] # [xmin, ymin, w, h]
         gt_bbox[2] += gt_bbox[0]
         gt_bbox[3] += gt_bbox[1]
-        print('ground_truth bb')        
-        print(gt_bbox)
 
         pred_cam_R = f['cam_R']
         pred_cam_t = f['cam_t']
+        #print(pred_cam_t)
+        #print(gt_pose)
         pred_pose = np.eye(4)
 
         if len(f['result']) < 1:
@@ -238,10 +241,6 @@ if __name__ == "__main__":
         
         pred_bbox = np.array(f['result'][0]['bbox']).tolist()
         iou_frame = iou(gt_bbox, pred_bbox)
-        print('pred_bbox bb') 
-        print(pred_bbox)
-        print('iou') 
-        print(iou_frame)
         ious.append(iou_frame)
         
         pred_pose[:3, :3] = pred_cam_R
@@ -250,8 +249,10 @@ if __name__ == "__main__":
         if iou_frame >= 0.5:
             # ADD
             add = add_err(gt_pose, pred_pose, model_vertices)
-            add *= 1000  # changing unit
+            #add *= 1000  # changing unit
             add_errs.append(add)
+            #print(add)
+            #print(diameter)
             adds.append(add < diameter/10)
 
             # 2D REPROJECTION ERROR

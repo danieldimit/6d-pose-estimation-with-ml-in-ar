@@ -296,6 +296,7 @@ def write_json(all_results, outputpath, for_eval=False):
         for human in im_res['result']:
             keypoints = []
             result = {}
+            bbox = human['bbox']
             if for_eval:
                 result['image_id'] = int(im_name.split('/')[-1].split('.')[0].split('_')[-1])
             else:
@@ -307,6 +308,9 @@ def write_json(all_results, outputpath, for_eval=False):
             kp_preds = human['keypoints']
             kp_scores = human['kp_score']
             pro_scores = human['proposal_score']
+            bbox_notensor = []
+            for n in range(bbox.shape[0]):
+                bbox_notensor.append(float(bbox[n]))
             for n in range(kp_scores.shape[0]):
                 keypoints.append(float(kp_preds[n, 0]))
                 keypoints.append(float(kp_preds[n, 1]))
@@ -315,6 +319,7 @@ def write_json(all_results, outputpath, for_eval=False):
             # from IPython import embed
             # embed()
             result['score'] = float(pro_scores)
+            result['bbox'] = bbox_notensor
 
             if form == 'cmu': # the form of CMU-Pose
                 if result['image_id'] not in json_results_cmu.keys():

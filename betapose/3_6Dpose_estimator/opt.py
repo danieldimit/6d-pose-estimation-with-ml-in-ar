@@ -6,6 +6,10 @@ parser = argparse.ArgumentParser(description='PyTorch AlphaPose Training')
 "----------------------------- General options -----------------------------"
 parser.add_argument('--expID', default='default', type=str,
                     help='Experiment ID')
+parser.add_argument('--kpdWeights', default='default', type=str,
+                    help='Directory where the kpd weights are')
+parser.add_argument('--sixd_base', default='../sixd_base', type=str,
+                    help='Directory where the kpd weights are')
 parser.add_argument('--dataset', default='coco', type=str,
                     help='Dataset choice: mpii | coco')
 parser.add_argument('--nThreads', default=40, type=int,
