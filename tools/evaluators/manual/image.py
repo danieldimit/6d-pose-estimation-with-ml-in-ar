@@ -50,10 +50,10 @@ def data_augmentation(img, shape, jitter, hue, saturation, exposure):
     dw =int(ow*jitter)
     dh =int(oh*jitter)
 
-    pleft  = random.randint(-dw, dw)
-    pright = random.randint(-dw, dw)
-    ptop   = random.randint(-dh, dh)
-    pbot   = random.randint(-dh, dh)
+    pleft  = 0 #random.randint(-dw, dw)
+    pright = pleft+dw
+    ptop   = 0 #random.randint(-dh, dh)
+    pbot   = ptop+dh
 
     swidth =  ow - pleft - pright
     sheight = oh - ptop - pbot
@@ -167,17 +167,12 @@ def change_background(img, mask, bg):
 
     return out
 
-def load_data_detection(imgpath, shape, jitter, hue, saturation, exposure, bgpath):
+def load_data_detection(imgpath, shape, jitter, hue, saturation, exposure):
     labpath = imgpath.replace('images', 'labels').replace('JPEGImages', 'labels').replace('.jpg', '.txt').replace('.png','.txt')
-    maskpath = imgpath.replace('JPEGImages', 'mask').replace('.jpg','.png')
-    #maskpath = imgpath.replace('JPEGImages', 'mask').replace('/00', '/').replace('.jpg', '.png')
 
     ## data augmentation
     img = Image.open(imgpath).convert('RGB')
-    mask = Image.open(maskpath).convert('RGB')
-    bg = Image.open(bgpath).convert('RGB')
-    
-    img = change_background(img, mask, bg)
+
     img,flip,dx,dy,sx,sy = data_augmentation(img, shape, jitter, hue, saturation, exposure)
     ow, oh = img.size
     label = fill_truth_detection(labpath, ow, oh, flip, dx, dy, 1./sx, 1./sy)

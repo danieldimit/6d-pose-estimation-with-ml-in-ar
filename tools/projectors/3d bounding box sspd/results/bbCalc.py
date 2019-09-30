@@ -14,14 +14,14 @@ def splitAndCastToFloat(line):
 
 
 def getBBOfPlyObject():
-	proj_2d_gt = np.loadtxt('corners_0096_gt.txt')
-	proj_2d_p = np.loadtxt('corners_0201.txt')
+	proj_2d_gt = np.loadtxt('corners_0005_gt.txt')
+	proj_2d_p = np.loadtxt('corners_0005.txt')
 	proj_2d_gt = proj_2d_gt.astype(int).T
 	proj_2d_p = proj_2d_p.astype(int).T
 	print(proj_2d_gt)
 	print(proj_2d_p)
 	# Make empty black image
-	image=cv2.imread('000201.png',1)
+	image=cv2.imread('000005.jpg',1)
 	height, width, channels = image.shape
 	
 	color_pr = (0,255,255)

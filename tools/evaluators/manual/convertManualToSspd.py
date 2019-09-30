@@ -4,7 +4,7 @@ import json
 
 def createLabelContent():
 	print('creating labels and deleting pics where the obj is partly outside of frame')
-	with open('annotation-results.6dan.json.json', 'r') as json_file:
+	with open('annotation-results.6dan.json', 'r') as json_file:
 		data = json.load(json_file)
 		for lbl in data:
 			p = lbl['sspd']
@@ -19,7 +19,7 @@ def createTestAndTrainFiles(counter):
 	f_test = open(os.path.join('./', 'test.txt'), "w+")
 	for i in range(counter):
 		img_type = ".jpg"
-		f_test.write('./JPEGImages/' + format(i, '06') + img_type + " \n")
+		f_test.write('LINEMOD/kuka_real/JPEGImages/' + format(i, '06') + img_type + "\n")
 	
 	f_test.close()
 
@@ -32,6 +32,5 @@ def createTestAndTrainFiles(counter):
 
 	
 if __name__ == "__main__":
-	createLabelContent()
-	createTestAndTrainFiles(len(os.listdir('./manual')))
+	createTestAndTrainFiles(len(os.listdir('./labels')))
 
