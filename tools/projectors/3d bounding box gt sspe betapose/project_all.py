@@ -17,10 +17,28 @@ def splitAndCastToFloat(line):
 	return list(map(float, line))
 
 
-def getBBOfPlyObject(gt_folder, ply_name):
+def printBB():
 	global w, h
 
-	with open(gt_folder + '/' + ply_name) as f:
+	target_img = 34
+	gt_folder_beta = './results/betapose/real_full'
+
+	proj_2d_gt_sspe = np.loadtxt('./results/sspe/real_full/gt/corners_' + format(target_img, '04') + '.txt')
+	proj_2d_p_sspe = np.loadtxt('./results/sspe/real_full/pr/corners_' + format(target_img, '04') + '.txt')
+
+	proj_2d_gt_sspe = proj_2d_gt_sspe.astype(int).T
+	proj_2d_p_sspe = proj_2d_p_sspe.astype(int).T
+
+
+
+
+	line_width = 2
+
+	color_pr_sspe = (0,255,0)
+	color_pr_betapose = (0,0,255)
+	color_gt = (255,0,0)
+
+	with open('kuka.ply') as f:
 		content = f.readlines()
 		content = [x.strip() for x in content] 
 		
@@ -51,17 +69,19 @@ def getBBOfPlyObject(gt_folder, ply_name):
 
 		corners = np.c_[corners, np.ones((len(corners), 1))].transpose()
 
-		with open(gt_folder + "/gt.yml", 'r') as stream:
+		with open(gt_folder_beta + "/gt.yml", 'r') as stream:
 			try:
-				with open(gt_folder + "/info.yml", 'r') as info_stream:
+				with open(gt_folder_beta + "/info.yml", 'r') as info_stream:
 					try:
-						with open(gt_folder + '/Betapose-results.json') as json_file:
+						with open(gt_folder_beta + '/Betapose-results.json') as json_file:
 							yaml_gt = yaml.safe_load(stream)
 							yaml_info = yaml.safe_load(info_stream)
 							data = json.load(json_file)
 							print(len(data))
 							for result in data:
 								img_num = int(result['image_id'].split('.')[0])
+								if (img_num != target_img):
+									continue
 								R = np.array(result['cam_R']).reshape(3, 3)
 								Rt = np.append(R, np.array([result['cam_t']]).T, axis=1)
 								kps = np.array(result['keypoints'])
@@ -85,7 +105,7 @@ def getBBOfPlyObject(gt_folder, ply_name):
 								proj_2d_p = proj_2d_p.astype(int)
 								
 								# Make empty black image
-								image = cv2.imread(gt_folder + '/rgb/' + format(img_num, '04') + '.jpg', 1)
+								image = cv2.imread(gt_folder_beta + '/rgb/' + format(img_num, '04') + '.jpg', 1)
 								height, width, channels = image.shape
 								red = [0, 0, 255]
 								blue = [255, 0, 0]
@@ -95,60 +115,68 @@ def getBBOfPlyObject(gt_folder, ply_name):
 								proj_2d_p[1, proj_2d_p[1] >= h] = h-1
 								proj_2d_p[0, proj_2d_p[0] >= w] = w-1
 
-								image[proj_2d_p[1, :], proj_2d_p[0, :]] = blue
-								image[proj_2d_gt[1, :], proj_2d_gt[0, :]] = red
+								sum_x = np.mean(proj_2d_p[0])
+								sum_y = np.mean(proj_2d_p[1])
+								proj_2d_p = np.concatenate((np.array([[sum_x,sum_y]]), proj_2d_p.T), axis=0).astype(int).T
 
-								cv2.rectangle(image,(bbox[0], bbox[1]),(bbox[2], bbox[3]),(0,255,0),3)
-								for c in kps:
-									if (c[2] > 0.2):
-										image[int(c[1]), int(c[0])]=(0,255,0)
+								
+								image = draw_bb(image, proj_2d_gt_sspe, color_gt, line_width)
+								image = draw_bb(image, proj_2d_p_sspe, color_pr_sspe, line_width)
+								image = draw_bb(image, proj_2d_p, color_pr_betapose, line_width)
 
-								# Draw lower base of 3d bb
-								pts = np.array([[proj_2d_p[0, 0], proj_2d_p[1, 0]], [proj_2d_p[0, 2], proj_2d_p[1, 2]],
-												[proj_2d_p[0, 3], proj_2d_p[1, 3]], [proj_2d_p[0, 1], proj_2d_p[1, 1]]],
-											   np.int32)
-								cv2.polylines(image, [pts], True, (0, 255, 255))
-								pts = np.array([[proj_2d_gt[0, 0], proj_2d_gt[1, 0]], [proj_2d_gt[0, 2], proj_2d_gt[1, 2]],
-												[proj_2d_gt[0, 3], proj_2d_gt[1, 3]], [proj_2d_gt[0, 1], proj_2d_gt[1, 1]]],
-											   np.int32)
-								cv2.polylines(image, [pts], True, (255, 0, 255))
 
-								# Draw the front of the bounding box
-								pts = np.array([[proj_2d_p[0, 3], proj_2d_p[1, 3]], [proj_2d_p[0, 7], proj_2d_p[1, 7]],
-												[proj_2d_p[0, 6], proj_2d_p[1, 6]], [proj_2d_p[0, 2], proj_2d_p[1, 2]]],
-											   np.int32)
-								cv2.polylines(image, [pts], True, (0, 255, 255))
-								pts = np.array([[proj_2d_gt[0, 3], proj_2d_gt[1, 3]], [proj_2d_gt[0, 7], proj_2d_gt[1, 7]],
-												[proj_2d_gt[0, 6], proj_2d_gt[1, 6]], [proj_2d_gt[0, 2], proj_2d_gt[1, 2]]],
-											   np.int32)
-								cv2.polylines(image, [pts], True, (255, 0, 255))
-
-								# Draw upper base of 3d bb
-								pts = np.array([[proj_2d_p[0, 4], proj_2d_p[1, 4]], [proj_2d_p[0, 6], proj_2d_p[1, 6]],
-												[proj_2d_p[0, 7], proj_2d_p[1, 7]], [proj_2d_p[0, 5], proj_2d_p[1, 5]]],
-											   np.int32)
-								cv2.polylines(image, [pts], True, (0, 255, 255))
-								pts = np.array([[proj_2d_gt[0, 4], proj_2d_gt[1, 4]], [proj_2d_gt[0, 6], proj_2d_gt[1, 6]],
-												[proj_2d_gt[0, 7], proj_2d_gt[1, 7]], [proj_2d_gt[0, 5], proj_2d_gt[1, 5]]],
-											   np.int32)
-								cv2.polylines(image, [pts], True, (255, 0, 255))
 
 								wname = str(img_num)
 								cv2.namedWindow(wname)
 								# Show the image and wait key press
 								cv2.imshow(wname, image)
 								cv2.waitKey()
+								cv2.imwrite("result.png",image)
 					except yaml.YAMLError as exc:
 						print(exc)
 			except yaml.YAMLError as exc:
 				print(exc)
 
 
+def draw_bb(imgCp, corners2D_pr, bb_3d_color, line_point):
+	overlay = imgCp.copy()
+	alpha = 0.3
+
+	corners2D_pr = corners2D_pr.T
+	p1 = corners2D_pr[1]
+	p2 = corners2D_pr[2]
+	p3 = corners2D_pr[3]
+	p4 = corners2D_pr[4]
+	p5 = corners2D_pr[5]
+	p6 = corners2D_pr[6]
+	p7 = corners2D_pr[7]
+	p8 = corners2D_pr[8]
+	center = corners2D_pr[0]
+
+	cv2.line(imgCp, (p1[0], p1[1]), (p2[0], p2[1]), bb_3d_color, line_point)
+	cv2.line(imgCp, (p2[0], p2[1]), (p4[0], p4[1]), bb_3d_color, line_point)
+	cv2.line(imgCp, (p4[0], p4[1]), (p3[0], p3[1]), bb_3d_color, line_point)
+	cv2.line(imgCp, (p3[0], p3[1]), (p1[0], p1[1]), bb_3d_color, line_point)
+
+	# draw back face
+	cv2.line(imgCp, (p5[0], p5[1]), (p6[0], p6[1]), bb_3d_color, line_point)
+	cv2.line(imgCp, (p7[0], p7[1]), (p8[0], p8[1]), bb_3d_color, line_point)
+	cv2.line(imgCp, (p6[0], p6[1]), (p8[0], p8[1]), bb_3d_color, line_point)
+	cv2.line(imgCp, (p5[0], p5[1]), (p7[0], p7[1]), bb_3d_color, line_point)
+
+	# draw right face
+	cv2.line(imgCp, (p2[0], p2[1]), (p6[0], p6[1]), bb_3d_color, line_point)
+	cv2.line(imgCp, (p1[0], p1[1]), (p5[0], p5[1]), bb_3d_color, line_point)
+
+	# draw left face
+	cv2.line(imgCp, (p3[0], p3[1]), (p7[0], p7[1]), bb_3d_color, line_point)
+	cv2.line(imgCp, (p4[0], p4[1]), (p8[0], p8[1]), bb_3d_color, line_point)
+
+	imgCp = cv2.addWeighted(overlay, alpha, imgCp, 1 - alpha, 0)
+	return imgCp
 		
 
 if __name__ == "__main__":
     # Training settings
 	# example: python project_all.py ape_gen obj_01.ply
-	folder     = sys.argv[1]
-	ply_name   = sys.argv[2]
-	getBBOfPlyObject(folder, ply_name)
+	printBB()
