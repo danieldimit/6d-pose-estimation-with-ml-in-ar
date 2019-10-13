@@ -73,6 +73,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     gts_trans           = []
     gts_rot             = []
     gts_corners2D       = []
+    count = 0
 
     # Read object model information, get 3D bounding box corners
     mesh          = MeshPly(meshname)
@@ -111,8 +112,9 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     logging("   Testing {}...".format(name))
     logging("   Number of test samples: %d" % len(test_loader.dataset))
     # Iterate through test batches (Batch size for test data is 1)
-    count = 0
+    count_succ = 0
     z = np.zeros((3, 1))
+    failed = 0;
     for batch_idx, (data, target) in enumerate(test_loader):
         
         t1 = time.time()
@@ -158,72 +160,85 @@ def valid(datacfg, cfgfile, weightfile, outfile):
                         match         = corner_confidence9(box_gt[:18], torch.FloatTensor(boxes[j][:18]))
                         box_pr        = boxes[j]
                         best_conf_est = boxes[j][18]
-
-                # Denormalize the corner predictions 
-                corners2D_gt = np.array(np.reshape(box_gt[:18], [9, 2]), dtype='float32')
-                corners2D_pr = np.array(np.reshape(box_pr[:18], [9, 2]), dtype='float32')
-                corners2D_gt[:, 0] = corners2D_gt[:, 0] * 640
-                corners2D_gt[:, 1] = corners2D_gt[:, 1] * 480               
-                corners2D_pr[:, 0] = corners2D_pr[:, 0] * 640
-                corners2D_pr[:, 1] = corners2D_pr[:, 1] * 480
-                preds_corners2D.append(corners2D_pr)
-                gts_corners2D.append(corners2D_gt)
-
-                # Compute corner prediction error
-                corner_norm = np.linalg.norm(corners2D_gt - corners2D_pr, axis=1)
-                corner_dist = np.mean(corner_norm)
-                errs_corner2D.append(corner_dist)
                 
-                # Compute [R|t] by pnp
-                R_gt, t_gt = pnp(np.array(np.transpose(np.concatenate((np.zeros((3, 1)), corners3D[:3, :]), axis=1)), dtype='float32'),  corners2D_gt, np.array(internal_calibration, dtype='float32'))
-                R_pr, t_pr = pnp(np.array(np.transpose(np.concatenate((np.zeros((3, 1)), corners3D[:3, :]), axis=1)), dtype='float32'),  corners2D_pr, np.array(internal_calibration, dtype='float32'))
+                print(batch_idx)
+                print("---------")
+                if (best_conf_est  < match_thresh):
+                    failed+=1
+                    if save:
 
-                if save:
-                    preds_trans.append(t_pr)
-                    gts_trans.append(t_gt)
-                    preds_rot.append(R_pr)
-                    gts_rot.append(R_gt)
+                        np.savetxt(backupdir + '/test/gt/R_' + format(batch_idx, '04') + '.txt', np.array([], dtype='float32'))
+                        np.savetxt(backupdir + '/test/gt/t_' + format(batch_idx, '04') + '.txt', np.array([], dtype='float32'))
+                        np.savetxt(backupdir + '/test/pr/R_' + format(batch_idx, '04') + '.txt', np.array([], dtype='float32'))
+                        np.savetxt(backupdir + '/test/pr/t_' + format(batch_idx, '04') + '.txt', np.array([], dtype='float32'))
+                        np.savetxt(backupdir + '/test/gt/corners_' + format(batch_idx, '04') + '.txt', np.array([], dtype='float32'))
+                        np.savetxt(backupdir + '/test/pr/corners_' + format(batch_idx, '04') + '.txt', np.array([], dtype='float32'))
+                    continue
+                else:
+                    # Denormalize the corner predictions 
+                    corners2D_gt = np.array(np.reshape(box_gt[:18], [9, 2]), dtype='float32')
+                    corners2D_pr = np.array(np.reshape(box_pr[:18], [9, 2]), dtype='float32')
+                    corners2D_gt[:, 0] = corners2D_gt[:, 0] * 640
+                    corners2D_gt[:, 1] = corners2D_gt[:, 1] * 480               
+                    corners2D_pr[:, 0] = corners2D_pr[:, 0] * 640
+                    corners2D_pr[:, 1] = corners2D_pr[:, 1] * 480
+                    preds_corners2D.append(corners2D_pr)
+                    gts_corners2D.append(corners2D_gt)
 
-                    np.savetxt(backupdir + '/test/gt/R_' + valid_files[count][-8:-3] + 'txt', np.array(R_gt, dtype='float32'))
-                    np.savetxt(backupdir + '/test/gt/t_' + valid_files[count][-8:-3] + 'txt', np.array(t_gt, dtype='float32'))
-                    np.savetxt(backupdir + '/test/pr/R_' + valid_files[count][-8:-3] + 'txt', np.array(R_pr, dtype='float32'))
-                    np.savetxt(backupdir + '/test/pr/t_' + valid_files[count][-8:-3] + 'txt', np.array(t_pr, dtype='float32'))
-                    np.savetxt(backupdir + '/test/gt/corners_' + valid_files[count][-8:-3] + 'txt', np.array(corners2D_gt, dtype='float32'))
-                    np.savetxt(backupdir + '/test/pr/corners_' + valid_files[count][-8:-3] + 'txt', np.array(corners2D_pr, dtype='float32'))
-                
-                # Compute translation error
-                trans_dist   = np.sqrt(np.sum(np.square(t_gt - t_pr)))
-                errs_trans.append(trans_dist)
-                
-                # Compute angle error
-                angle_dist   = calcAngularDistance(R_gt, R_pr)
-                errs_angle.append(angle_dist)
-                
-                # Compute pixel error
-                Rt_gt        = np.concatenate((R_gt, t_gt), axis=1)
-                Rt_pr        = np.concatenate((R_pr, t_pr), axis=1)
-                print(internal_calibration)
-                print(Rt_gt)
-                print(vertices)
-                proj_2d_gt   = compute_projection(vertices, Rt_gt, internal_calibration)
-                proj_2d_pred = compute_projection(vertices, Rt_pr, internal_calibration) 
-                norm         = np.linalg.norm(proj_2d_gt - proj_2d_pred, axis=0)
-                pixel_dist   = np.mean(norm)
-                errs_2d.append(pixel_dist)
+                    # Compute corner prediction error
+                    corner_norm = np.linalg.norm(corners2D_gt - corners2D_pr, axis=1)
+                    corner_dist = np.mean(corner_norm)
+                    errs_corner2D.append(corner_dist)
+                    
+                    # Compute [R|t] by pnp
+                    R_gt, t_gt = pnp(np.array(np.transpose(np.concatenate((np.zeros((3, 1)), corners3D[:3, :]), axis=1)), dtype='float32'),  corners2D_gt, np.array(internal_calibration, dtype='float32'))
+                    R_pr, t_pr = pnp(np.array(np.transpose(np.concatenate((np.zeros((3, 1)), corners3D[:3, :]), axis=1)), dtype='float32'),  corners2D_pr, np.array(internal_calibration, dtype='float32'))
 
-                # Compute 3D distances
-                transform_3d_gt   = compute_transformation(vertices, Rt_gt) 
-                transform_3d_pred = compute_transformation(vertices, Rt_pr)  
-                norm3d            = np.linalg.norm(transform_3d_gt - transform_3d_pred, axis=0)
-                vertex_dist       = np.mean(norm3d)    
-                errs_3d.append(vertex_dist)  
+                    if save:
+                        count_succ += 1
+                        preds_trans.append(t_pr)
+                        gts_trans.append(t_gt)
+                        preds_rot.append(R_pr)
+                        gts_rot.append(R_gt)
 
-                # Sum errors
-                testing_error_trans  += trans_dist
-                testing_error_angle  += angle_dist
-                testing_error_pixel  += pixel_dist
-                testing_samples      += 1
-                count = count + 1
+                        
+                        np.savetxt(backupdir + '/test/gt/R_' + format(batch_idx, '04') + '.txt', np.array(R_gt, dtype='float32'))
+                        np.savetxt(backupdir + '/test/gt/t_' + format(batch_idx, '04') + '.txt', np.array(t_gt, dtype='float32'))
+                        np.savetxt(backupdir + '/test/pr/R_' + format(batch_idx, '04') + '.txt', np.array(R_pr, dtype='float32'))
+                        np.savetxt(backupdir + '/test/pr/t_' + format(batch_idx, '04') + '.txt', np.array(t_pr, dtype='float32'))
+                        np.savetxt(backupdir + '/test/gt/corners_' + format(batch_idx, '04') + '.txt', np.array(corners2D_gt, dtype='float32'))
+                        np.savetxt(backupdir + '/test/pr/corners_' + format(batch_idx, '04') + '.txt', np.array(corners2D_pr, dtype='float32'))
+                    
+                    # Compute translation error
+                    trans_dist   = np.sqrt(np.sum(np.square(t_gt - t_pr)))
+                    errs_trans.append(trans_dist)
+                    
+                    # Compute angle error
+                    angle_dist   = calcAngularDistance(R_gt, R_pr)
+                    errs_angle.append(angle_dist)
+                    
+                    # Compute pixel error
+                    Rt_gt        = np.concatenate((R_gt, t_gt), axis=1)
+                    Rt_pr        = np.concatenate((R_pr, t_pr), axis=1)
+                    proj_2d_gt   = compute_projection(vertices, Rt_gt, internal_calibration)
+                    proj_2d_pred = compute_projection(vertices, Rt_pr, internal_calibration) 
+                    norm         = np.linalg.norm(proj_2d_gt - proj_2d_pred, axis=0)
+                    pixel_dist   = np.mean(norm)
+                    errs_2d.append(pixel_dist)
+
+                    # Compute 3D distances
+                    transform_3d_gt   = compute_transformation(vertices, Rt_gt) 
+                    transform_3d_pred = compute_transformation(vertices, Rt_pr)  
+                    norm3d            = np.linalg.norm(transform_3d_gt - transform_3d_pred, axis=0)
+                    vertex_dist       = np.mean(norm3d)    
+                    errs_3d.append(vertex_dist)  
+
+                    # Sum errors
+                    testing_error_trans  += trans_dist
+                    testing_error_angle  += angle_dist
+                    testing_error_pixel  += pixel_dist
+                    testing_samples      += 1
+                    count = count + 1
 
         t5 = time.time()
 
@@ -232,6 +247,11 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     acc         = len(np.where(np.array(errs_2d) <= px_threshold)[0]) * 100. / (len(errs_2d)+eps)
     acc5cm5deg  = len(np.where((np.array(errs_trans) <= 0.05) & (np.array(errs_angle) <= 5))[0]) * 100. / (len(errs_trans)+eps)
     acc3d10     = len(np.where(np.array(errs_3d) <= diam * 0.1)[0]) * 100. / (len(errs_3d)+eps)
+    acc3d20     = len(np.where(np.array(errs_3d) <= diam * 0.2)[0]) * 100. / (len(errs_3d)+eps)
+    acc3d30     = len(np.where(np.array(errs_3d) <= diam * 0.3)[0]) * 100. / (len(errs_3d)+eps)
+    acc3d40     = len(np.where(np.array(errs_3d) <= diam * 0.4)[0]) * 100. / (len(errs_3d)+eps)
+    acc3d50     = len(np.where(np.array(errs_3d) <= diam * 0.5)[0]) * 100. / (len(errs_3d)+eps)
+    acc3d60     = len(np.where(np.array(errs_3d) <= diam * 0.6)[0]) * 100. / (len(errs_3d)+eps)
     acc5cm5deg  = len(np.where((np.array(errs_trans) <= 0.05) & (np.array(errs_angle) <= 5))[0]) * 100. / (len(errs_trans)+eps)
     corner_acc  = len(np.where(np.array(errs_corner2D) <= px_threshold)[0]) * 100. / (len(errs_corner2D)+eps)
     mean_err_2d = np.mean(errs_2d)
@@ -251,9 +271,17 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     logging('Results of {}'.format(name))
     logging('   Acc using {} px 2D Projection = {:.2f}%'.format(px_threshold, acc))
     logging('   Acc using 10% threshold - {} vx 3D Transformation = {:.2f}%'.format(diam * 0.1, acc3d10))
+    logging('   Acc using 20% threshold - {} vx 3D Transformation = {:.2f}%'.format(diam * 0.2, acc3d20))
+    logging('   Acc using 30% threshold - {} vx 3D Transformation = {:.2f}%'.format(diam * 0.3, acc3d30))
+    logging('   Acc using 40% threshold - {} vx 3D Transformation = {:.2f}%'.format(diam * 0.4, acc3d30))
+    logging('   Acc using 50% threshold - {} vx 3D Transformation = {:.2f}%'.format(diam * 0.5, acc3d30))
+    logging('   Acc using 60% threshold - {} vx 3D Transformation = {:.2f}%'.format(diam * 0.6, acc3d30))
     logging('   Acc using 5 cm 5 degree metric = {:.2f}%'.format(acc5cm5deg))
     logging("   Mean 2D pixel error is %f, Mean vertex error is %f, mean corner error is %f" % (mean_err_2d, np.mean(errs_3d), mean_corner_err_2d))
     logging('   Translation error: %f m, angle error: %f degree, pixel error: % f pix' % (testing_error_trans/nts, testing_error_angle/nts, testing_error_pixel/nts) )
+    print(count_succ)
+    print(len(errs_corner2D))
+    print(failed)
 
     if save:
         predfile = backupdir + '/predictions_linemod_' + name +  '.mat'

@@ -1,0 +1,7 @@
+train  = output/train.txt
+valid  = output/test.txt
+backup = backup/cube
+mesh = output/cubev2.ply
+tr_range = LINEMOD/benchvise/training_range.txt
+name = cube
+diam = 0.4891
