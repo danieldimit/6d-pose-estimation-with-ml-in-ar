@@ -31,6 +31,9 @@ import sys
 import time
 import wave
 import sspd.evaluate_single_image
+import time
+
+current_milli_time = lambda: int(round(time.time() * 1000))
 
 dir_file = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(dir_file, "../../.."))
@@ -81,8 +84,11 @@ class DummyVideoApp(gabriel3.proxy.CognitiveProcessThread):
         header['status'] = "success"
         print("processing: ")
         print("%s\n" % header)
+        t1 = current_milli_time()
         img = fix_image_ratio(raw2cv_image(data), resize_max = 640)
         eval_res = sspd.evaluate_single_image.evaluate_img(img)
+        print('Time for evaluation:')
+        print(current_milli_time() - t1)
         display_image('input', eval_res[0], wait_time = 1)
         return json.dumps({'center': str(eval_res[1]), 'bb': str(eval_res[2]),
                            'R': str(eval_res[3]), 't': str(eval_res[4])})
