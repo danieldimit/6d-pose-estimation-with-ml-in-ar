@@ -69,7 +69,7 @@ def getBBOfPlyObject(gt_folder, ply_name):
 								proj_2d_p = proj_2d_p.astype(int)
 
 								# Make empty black image
-								image=cv2.imread(gt_folder + '/rgb/' + format(img_num, '04') + '.png',1)
+								image=cv2.imread(gt_folder + '/rgb/' + format(img_num, '04') + '.jpg',1)
 								height, width, channels = image.shape
 								blue = [255,0,0]
 								image[proj_2d_p[1,:],proj_2d_p[0,:]]=blue
