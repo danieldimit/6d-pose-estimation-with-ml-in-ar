@@ -20,22 +20,22 @@ def splitAndCastToFloat(line):
 def printBB():
 	global w, h
 
-	target_img = 34
-	gt_folder_beta = './results/betapose/real_full'
+	image_output_folder = './image_output/'
+	image_input_folder = './images_input/'
+	betapose_results = './results/betapose/real_demo/'
+	sspe_results = './results/sspe/real_demo/pr/corners_'
 
-	proj_2d_p_sspe = np.loadtxt('./results/sspe/real_full/pr/corners_' + format(target_img, '04') + '.txt')
-
-	proj_2d_p_sspe = proj_2d_p_sspe.astype(int).T
-
-
-
+	i_c = np.array([565,0,320,0,605,240,0,0,1]).reshape(3, 3)
 
 	line_width = 2
-
 	color_pr_sspe = (0,255,0)
 	color_pr_betapose = (0,0,255)
 	color_gt = (255,0,0)
 
+	if not os.path.exists(image_output_folder):
+		os.makedirs(image_output_folder)
+
+	# load ply model
 	with open('kuka.ply') as f:
 		content = f.readlines()
 		content = [x.strip() for x in content] 
@@ -64,76 +64,47 @@ def printBB():
 		maxs = vertices.max(0)
 		minsMaxs = np.array([[mins.item(0),mins.item(1),mins.item(2)], [maxs.item(0),maxs.item(1),maxs.item(2)]]).T
 		corners = np.array(np.meshgrid(minsMaxs[0,:], minsMaxs[1,:], minsMaxs[2,:])).T.reshape(-1,3)
-
 		corners = np.c_[corners, np.ones((len(corners), 1))].transpose()
 
-		with open(gt_folder_beta + "/gt.yml", 'r') as stream:
-			try:
-				with open(gt_folder_beta + "/info.yml", 'r') as info_stream:
-					try:
-						with open(gt_folder_beta + '/Betapose-results.json') as json_file:
-							yaml_gt = yaml.safe_load(stream)
-							yaml_info = yaml.safe_load(info_stream)
-							data = json.load(json_file)
-							print(len(data))
-							for result in data:
-								img_num = int(result['image_id'].split('.')[0])
-								if (img_num != target_img):
-									continue
-								R = np.array(result['cam_R']).reshape(3, 3)
-								Rt = np.append(R, np.array([result['cam_t']]).T, axis=1)
-								kps = np.array(result['keypoints'])
-								bbox = np.array(result['bbox']).astype(int)
-								pt_num = int(len(kps)/3)
-								kps = kps.reshape(pt_num,3)
+		# Load the results for betapose and sspe for each image, project it and save it
+		with open(betapose_results + 'Betapose-results.json') as json_file:
+			data = json.load(json_file)
 
-								img_infos = yaml_gt[img_num][0]
-								R_gt = np.array(img_infos['cam_R_m2c']).reshape(3, 3)
-								Rt_gt = np.append(R_gt, np.array([img_infos['cam_t_m2c']]).T, axis=1)
-								np.set_printoptions(suppress=True)
+			for file in sorted(os.listdir(image_input_folder)):
+				target_img = int(file.split('.')[0])
+				proj_2d_p_sspe = np.loadtxt(sspe_results + format(target_img, '04') + '.txt')
+				proj_2d_p_sspe = proj_2d_p_sspe.astype(int).T
+				for result in data:
+					img_num = int(result['image_id'].split('.')[0])
+					if (img_num != target_img):
+						continue
+					R = np.array(result['cam_R']).reshape(3, 3)
+					Rt = np.append(R, np.array([result['cam_t']]).T, axis=1)
 
-								img_infos = yaml_info[img_num]
-								i_c = np.array(img_infos['cam_K']).reshape(3, 3)
+					np.set_printoptions(suppress=True)
 
-								proj_2d_gt = compute_projection(corners, Rt_gt, i_c)
-								proj_2d_gt = proj_2d_gt.astype(int)
+					proj_2d_p_beta = compute_projection(corners, Rt, i_c)
+					proj_2d_p_beta = proj_2d_p_beta.astype(int)
+					
+					# Make empty black image
+					image = cv2.imread(image_input_folder + file, 1)
+					height, width, channels = image.shape
+					red = [0, 0, 255]
+					blue = [255, 0, 0]
 
+					proj_2d_p_beta[1, proj_2d_p_beta[1] < 0] = 0
+					proj_2d_p_beta[0, proj_2d_p_beta[0] < 0] = 0
+					proj_2d_p_beta[1, proj_2d_p_beta[1] >= h] = h-1
+					proj_2d_p_beta[0, proj_2d_p_beta[0] >= w] = w-1
 
-								proj_2d_p = compute_projection(corners, Rt, i_c)
-								proj_2d_p = proj_2d_p.astype(int)
-								
-								# Make empty black image
-								image = cv2.imread(gt_folder_beta + '/rgb/' + format(img_num, '04') + '.jpg', 1)
-								height, width, channels = image.shape
-								red = [0, 0, 255]
-								blue = [255, 0, 0]
+					sum_x = np.mean(proj_2d_p_beta[0])
+					sum_y = np.mean(proj_2d_p_beta[1])
+					proj_2d_p_beta = np.concatenate((np.array([[sum_x,sum_y]]), proj_2d_p_beta.T), axis=0).astype(int).T
 
-								proj_2d_p[1, proj_2d_p[1] < 0] = 0
-								proj_2d_p[0, proj_2d_p[0] < 0] = 0
-								proj_2d_p[1, proj_2d_p[1] >= h] = h-1
-								proj_2d_p[0, proj_2d_p[0] >= w] = w-1
+					image = draw_bb(image, proj_2d_p_sspe, color_pr_sspe, line_width)
+					image = draw_bb(image, proj_2d_p_beta, color_pr_betapose, line_width)
 
-								sum_x = np.mean(proj_2d_p[0])
-								sum_y = np.mean(proj_2d_p[1])
-								proj_2d_p = np.concatenate((np.array([[sum_x,sum_y]]), proj_2d_p.T), axis=0).astype(int).T
-
-								
-								image = draw_bb(image, proj_2d_gt_sspe, color_gt, line_width)
-								image = draw_bb(image, proj_2d_p_sspe, color_pr_sspe, line_width)
-								image = draw_bb(image, proj_2d_p, color_pr_betapose, line_width)
-
-
-
-								wname = str(img_num)
-								cv2.namedWindow(wname)
-								# Show the image and wait key press
-								cv2.imshow(wname, image)
-								cv2.waitKey()
-								cv2.imwrite("result.png",image)
-					except yaml.YAMLError as exc:
-						print(exc)
-			except yaml.YAMLError as exc:
-				print(exc)
+					cv2.imwrite(image_output_folder + file,image)
 
 
 def draw_bb(imgCp, corners2D_pr, bb_3d_color, line_point):
