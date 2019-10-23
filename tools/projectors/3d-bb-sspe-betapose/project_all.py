@@ -78,31 +78,28 @@ def printBB():
 					img_num = int(result['image_id'].split('.')[0])
 					if (img_num != target_img):
 						continue
-					R = np.array(result['cam_R']).reshape(3, 3)
-					Rt = np.append(R, np.array([result['cam_t']]).T, axis=1)
-
-					np.set_printoptions(suppress=True)
-
-					proj_2d_p_beta = compute_projection(corners, Rt, i_c)
-					proj_2d_p_beta = proj_2d_p_beta.astype(int)
-					
 					# Make empty black image
 					image = cv2.imread(image_input_folder + file, 1)
 					height, width, channels = image.shape
 					red = [0, 0, 255]
 					blue = [255, 0, 0]
 
-					proj_2d_p_beta[1, proj_2d_p_beta[1] < 0] = 0
-					proj_2d_p_beta[0, proj_2d_p_beta[0] < 0] = 0
-					proj_2d_p_beta[1, proj_2d_p_beta[1] >= h] = h-1
-					proj_2d_p_beta[0, proj_2d_p_beta[0] >= w] = w-1
+					if ('cam_R' in result):
+						R = np.array(result['cam_R']).reshape(3, 3)
+						Rt = np.append(R, np.array([result['cam_t']]).T, axis=1)
+						proj_2d_p_beta = compute_projection(corners, Rt, i_c)
+						proj_2d_p_beta = proj_2d_p_beta.astype(int)
+						proj_2d_p_beta[1, proj_2d_p_beta[1] < 0] = 0
+						proj_2d_p_beta[0, proj_2d_p_beta[0] < 0] = 0
+						proj_2d_p_beta[1, proj_2d_p_beta[1] >= h] = h-1
+						proj_2d_p_beta[0, proj_2d_p_beta[0] >= w] = w-1
+						sum_x = np.mean(proj_2d_p_beta[0])
+						sum_y = np.mean(proj_2d_p_beta[1])
+						proj_2d_p_beta = np.concatenate((np.array([[sum_x,sum_y]]), proj_2d_p_beta.T), axis=0).astype(int).T
+						image = draw_bb(image, proj_2d_p_beta, color_pr_betapose, line_width)
 
-					sum_x = np.mean(proj_2d_p_beta[0])
-					sum_y = np.mean(proj_2d_p_beta[1])
-					proj_2d_p_beta = np.concatenate((np.array([[sum_x,sum_y]]), proj_2d_p_beta.T), axis=0).astype(int).T
-
-					image = draw_bb(image, proj_2d_p_sspe, color_pr_sspe, line_width)
-					image = draw_bb(image, proj_2d_p_beta, color_pr_betapose, line_width)
+					if proj_2d_p_sspe.shape != (0,):
+						image = draw_bb(image, proj_2d_p_sspe, color_pr_sspe, line_width)
 
 					cv2.imwrite(image_output_folder + file,image)
 
