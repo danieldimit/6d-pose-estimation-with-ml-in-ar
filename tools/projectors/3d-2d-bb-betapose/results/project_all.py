@@ -43,7 +43,7 @@ def getBBOfPlyObject(gt_folder, ply_name):
 		copy = [];
 		for line in content: 
 			copy.append(splitAndCastToFloat(line))
-		vertices = np.matrix(np.array(copy))
+		vertices = np.matrix(np.array(copy))/1000
 		mins = vertices.min(0)
 		maxs = vertices.max(0)
 		minsMaxs = np.array([[mins.item(0),mins.item(1),mins.item(2)], [maxs.item(0),maxs.item(1),maxs.item(2)]]).T

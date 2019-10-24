@@ -20,12 +20,14 @@ def splitAndCastToFloat(line):
 def printBB():
 	global w, h
 
-	image_output_folder = './image_output/'
-	image_input_folder = './images_input/'
-	betapose_results = './results/betapose/real_demo/'
-	sspe_results = './results/sspe/real_demo/pr/corners_'
+	image_output_folder = './image_output2/'
+	image_input_folder = './images_input2/'
+	betapose_results = './results/betapose/trd/Betapose-results2.json'
+	sspe_results = './results/sspe/trd/pr2/'
 
-	i_c = np.array([565,0,320,0,605,240,0,0,1]).reshape(3, 3)
+	#i_c = np.array([565,0,320,0,605,240,0,0,1]).reshape(3, 3)
+	#i_c = np.array([320., 0.0, 320., 0.0, 320, 240., 0.0, 0.0, 1.0],dtype=float).reshape(3, 3)
+	i_c = np.array([320., 0.0, 320., 0.0, 320, 240., 0.0, 0.0, 1.0],dtype=float).reshape(3, 3)
 
 	line_width = 2
 	color_pr_sspe = (0,255,0)
@@ -67,13 +69,25 @@ def printBB():
 		corners = np.c_[corners, np.ones((len(corners), 1))].transpose()
 
 		# Load the results for betapose and sspe for each image, project it and save it
-		with open(betapose_results + 'Betapose-results.json') as json_file:
+		with open(betapose_results) as json_file:
 			data = json.load(json_file)
 
 			for file in sorted(os.listdir(image_input_folder)):
 				target_img = int(file.split('.')[0])
-				proj_2d_p_sspe = np.loadtxt(sspe_results + format(target_img, '04') + '.txt')
-				proj_2d_p_sspe = proj_2d_p_sspe.astype(int).T
+				proj_2d_p_sspe = np.array([])
+				if os.path.isfile(sspe_results + 'corners_' + format(target_img, '04') + '.txt'):
+					R_sspe = np.loadtxt(sspe_results + 'R_' +  format(target_img, '04') + '.txt')
+					t_sspe = np.array([np.loadtxt(sspe_results + 't_' +  format(target_img, '04') + '.txt')]).T
+					Rt_sspe = np.append(R_sspe, t_sspe, axis=1)
+					proj_2d_p_sspe = compute_projection(corners, Rt_sspe, i_c)
+					proj_2d_p_sspe = proj_2d_p_sspe.astype(int)
+					proj_2d_p_sspe[1, proj_2d_p_sspe[1] < 0] = 0
+					proj_2d_p_sspe[0, proj_2d_p_sspe[0] < 0] = 0
+					proj_2d_p_sspe[1, proj_2d_p_sspe[1] >= h] = h-1
+					proj_2d_p_sspe[0, proj_2d_p_sspe[0] >= w] = w-1
+					sum_x = np.mean(proj_2d_p_sspe[0])
+					sum_y = np.mean(proj_2d_p_sspe[1])
+					proj_2d_p_sspe = np.concatenate((np.array([[sum_x,sum_y]]), proj_2d_p_sspe.T), axis=0).astype(int).T
 				for result in data:
 					img_num = int(result['image_id'].split('.')[0])
 					if (img_num != target_img):
