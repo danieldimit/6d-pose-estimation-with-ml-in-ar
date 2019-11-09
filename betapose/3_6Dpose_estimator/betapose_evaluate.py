@@ -59,6 +59,7 @@ def load_sixd_models(base_path, obj_id):
     # You need to give camera info manually here.
     #bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
     bench.cam = np.array([[320., 0.0, 320.], [0.0, 320, 240.], [0.0, 0.0, 1.0]])
+    #bench.cam = np.array([[614.15252686, 0, 323.15930176], [0, 614.09857178, 239.60848999], [0, 0, 1]])
     
     #collect model info
     model_info = load_yaml(os.path.join(base_path, 'models', 'models_info.yml'))

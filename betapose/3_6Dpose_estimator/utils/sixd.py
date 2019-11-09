@@ -60,7 +60,7 @@ class Benchmark:
 def load_sixd(base_path, seq, nr_frames=0, load_mesh=True):
 
     bench = Benchmark()
-    bench.scale_to_meters = 0.001
+    bench.scale_to_meters = 1
     if os.path.exists(os.path.join(base_path, 'camera.yml')):
         cam_info = load_yaml(os.path.join(base_path,  'camera.yml'))
         bench.cam[0, 0] = cam_info['fx']

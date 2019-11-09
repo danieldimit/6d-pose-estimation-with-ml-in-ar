@@ -1,6 +1,6 @@
 classes= 1
 train  = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/dataset/train.txt
 valid  = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/dataset/test.txt
-names = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/data/psp.names
-backup = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/backup/psp
+names = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/data/kuka.names
+backup = /home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/backup/kuka
 

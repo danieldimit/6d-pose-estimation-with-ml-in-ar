@@ -1,4 +1,16 @@
-python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --output_base ../output --sixd_base ../sixd_base/
+1) trqbva da imam papka sixd_base koqto ima 3 papki kpmodels, models, test. test e papkata suzdadena ot tool-a mi
+2) trqbva mi betaposeFormat papkav 3_.../train_YOLO. Tq trqbva da e vuv format kato za sspd. T.e. da ima JPEGImages, labels, train, test, training_range.
+3) 1_... suzdava kpmodels papkata
+4) 2_... vzima snimkite, modela i kp modela i projektira kp-ovete vurhu snimkite. Slaga gi v papka output01
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../outputTest --sixd_base ../sixd_base/
+
+5) 3_... train_KPD se uchi. Trqbva da promenq vuv train_KPD/src/utils/pose.py broq na KPs.
+
+CUDA_VISIBLE_DEVICES=0 python src/train.py --trainBatch 3 --expID psp_noDPG --optMethod adam --nEpochs 2000 --nKps 45
+CUDA_VISIBLE_DEVICES=0  python src/train.py --trainBatch 4 --expID psp_DPG --optMethod adam --nEpochs 2000 --nKps 45 --loadModel ../exp/coco/new_seq1_50kp_2/model_200.pkl --addDPG
+
+6) nakraq mi trqbvat weights ot yolo i kpd i configuracionnite fileove na YOLO
 
 python sspdToYoloConverter.py
 
@@ -9,3 +21,6 @@ python sspdToYoloConverter.py
 export PATH=/usr/local/cuda-10.0/bin:/usr/local/cuda-10.0/NsightCompute-1.0${PATH:+:${PATH}}
 export LD_LIBRARY_PATH=/usr/local/cuda-10.0/lib64\ ${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda/lib64
+
+
+

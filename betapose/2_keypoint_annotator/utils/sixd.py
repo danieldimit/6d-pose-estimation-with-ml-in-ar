@@ -91,8 +91,8 @@ def load_sixd(base_path, seq, nr_frames=0, load_mesh=True, offset=0, max=0):
         fr = Frame()
         fr.nr = i
         nr_string = '{:04d}'.format(i)
-        fr.path = path + "rgb/" + nr_string + ".png"
-        fr.color = cv2.imread(path + "rgb/" + nr_string + ".png").astype(np.float32) / 255.0
+        fr.path = path + "rgb/" + nr_string + ".jpg"
+        fr.color = cv2.imread(path + "rgb/" + nr_string + ".jpg").astype(np.float32) / 255.0
         #print ("fr.color's shape:")
         #print (fr.color.shape)
         nr_string = '{:04d}'.format(i)        

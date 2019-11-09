@@ -49,12 +49,9 @@ def load_yaml(path):
 def load_bench(base_path):
 	print("Loading models and KP models...")
 	bench = Benchmark()
-	bench.scale_to_meters = 1 # Unit in model is mm
+	bench.scale_to_meters = 0.001 # Unit in model is mm
 	# You need to give camera info manually. Here is the camera info in Linemod dataset.
-	camera_info = load_yaml(os.path.join(base_path, 'test', '{:02d}'.format(opt.obj_id), 'info.yml'))
-	#bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
-	bench.cam = np.array(camera_info[0]['cam_K']).reshape(3, 3)
-	print(bench.cam)
+	bench.cam = np.array([[572.4114, 0.0, 325.2611], [0.0, 573.57043, 242.04899], [0.0, 0.0, 1.0]])
 
 	#collect model info
 	model_info = load_yaml(os.path.join(base_path, 'models', 'models_info.yml'))
@@ -62,16 +59,11 @@ def load_bench(base_path):
 		name = '{:02d}'.format(int(key))
 		bench.models[name] = Model3D()
 		bench.models[name].diameter = val['diameter']
-		name = 'obj_{:02d}'.format(int(key))
-		bench.models['{:02d}'.format(int(key))].load(os.path.join(base_path, 'models/' + name + '.ply'),
-											   scale=bench.scale_to_meters)
 
 	# loading models, Linemod has 15 seqs, we use 13(except 3 and 7)
-	# for ID in range(1,16):
-	# 	if (ID != 3 and ID != 7):
-	# 		name = 'obj_{:02d}'.format(ID)
-	# 		bench.models['{:02d}'.format(ID)].load(os.path.join(base_path, 'models/' + name + '.ply'),
-	# 											   scale=bench.scale_to_meters)
+	for ID in range(1,2):
+		name = 'obj_{:02d}'.format(ID)
+		bench.models['{:02d}'.format(ID)].load(os.path.join(base_path, 'models/' + name + '.ply'), scale=bench.scale_to_meters)
 	print("Loading models finished!")
 
 	# loading and refine kp models
@@ -309,17 +301,12 @@ class sinobj:
 ''' 
 	Annotate keypoints on all the files. *******************************************************
 '''
-def gene_all_files(frames, cam_K, models, kp_models, offset, max):
-	print('Generating files')
-	from_v = offset
-	to_v = offset + opt.batch_size
-	if (max < to_v):
-		to_v = max
-	for idx in range(from_v, to_v):
+def gene_all_files(frames, cam_K, models, kp_models):
+	for idx,f in enumerate(frames):
 		#f.gt is a tuple consists of all objs
 		if idx % 100 == 0 :
 			print(idx, "has finished! ")
-		for obj_perf in frames[idx % opt.batch_size].gt:
+		for obj_perf in f.gt:
 			name = obj_perf[0]
 			# embed()
 			if name != OBJECT_CHOSEN: continue
@@ -334,7 +321,7 @@ def gene_all_files(frames, cam_K, models, kp_models, offset, max):
 			frame_obj.project_all(cam_K)
 			frame_obj.project_kp(cam_K)
 			# embed()
-			whole_img = Image.fromarray(np.uint8(np.array(frames[idx % opt.batch_size].color)))
+			whole_img = Image.fromarray(np.uint8(np.array(f.color)))
 			frame_obj.output(whole_img)
 
 
@@ -344,7 +331,7 @@ if __name__ == '__main__':
 
 	# log writer
 	global LOG_FOUT
-	#LOG_FOUT = open('kp_dataset_log.txt', 'w')
+	LOG_FOUT = open('kp_dataset_log.txt', 'w')
 
 	global output_counter
 	global output_img_dir
@@ -371,24 +358,17 @@ if __name__ == '__main__':
 
 	print ("Running keypoint dataset generator ...")
 	bench = load_bench(sixd_base)
-	print ("Loading cam ...")
 	cam_K = bench.cam
-	print ("Loading models ...")
 	models = bench.models
-	print ("Loading kp models ...")
 	kpmodels = bench.kpmodels
 	print("Now generating", OBJECT_CHOSEN)
 	print("Saving in", kp_dataset_base)
 	print("Loading all sixd frames of current seq.")
 	# new added validation dataset
-	all_imgs = len(os.listdir(sixd_base + "/test/" + format(opt.obj_id, '02') + "/rgb"))
-	print(int(all_imgs / opt.batch_size) + 1)
-	for i in range(int(len(os.listdir(sixd_base + "/test/" + format(opt.obj_id, '02') + "/rgb")) / opt.batch_size) + 1):
-		offset = i * opt.batch_size
-		output_counter = offset
-		bench = load_sixd(sixd_base, seq=OBJECT_CHOSEN, offset=offset, max=all_imgs)	#Modified, take care!
-		print("Loading finished!")
-		gene_all_files(bench.frames, cam_K, models, kpmodels, offset, all_imgs)
+	bench = load_sixd(sixd_base, seq=OBJECT_CHOSEN)	#Modified, take care!
+	# bench = load_sixd(sixd_base, seq=2)
+	print("Loading finished!")
+	gene_all_files(bench.frames, cam_K, models, kpmodels)
 
 	print("Now spliting images into training and eval.")
 	LINEMOD_ROOT = os.path.join(sixd_base, 'test')
@@ -414,9 +394,9 @@ if __name__ == '__main__':
 		target_path = None
 		if idx in selected_ids:
 			count += 1
-			target_path = opj(train_imgs, '%012d.jpg' % img_idx)
+			target_path = opj(train_imgs, '%012d.png' % img_idx)
 		else:
-			target_path = opj(eval_imgs, '%012d.jpg' % img_idx)
+			target_path = opj(eval_imgs, '%012d.png' % img_idx)
 		copyfile(img_path, target_path)
 	assert count == NUM_SELECTED, "%d, %d" % (count, NUM_SELECTED)
 

@@ -1,1 +1,14 @@
 output01
+betaposeFormat
+outputEval
+sixd_base
+sixd_labeled
+psp_base
+datasets_annotated
+datasets_base
+outputs
+3_6Dpose_estimator/train_YOLO/darknet53.conv.74
+3_6Dpose_estimator/train_YOLO/dataset
+3_6Dpose_estimator/train_YOLO/weights
+3_6Dpose_estimator/train_YOLO/backup
+3_6Dpose_estimator/models

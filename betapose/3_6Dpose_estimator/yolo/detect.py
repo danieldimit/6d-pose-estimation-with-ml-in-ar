@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
-import cv2 
+import cv2
 from util import *
 import argparse
 import os 
@@ -19,24 +19,27 @@ import itertools
 
 if __name__ == '__main__':
 
-    scales = "1,2,3"
-    images = "imgs/messi.jpg"
+    scales = "1,2,3,4"
+    #images = "0037.png"
+    images = "psp1.png"
     batch_size = 1
     confidence = 0.5
     nms_thesh = 0.4
 
     CUDA = torch.cuda.is_available()
 
-    num_classes = 80
-    classes = load_classes('data/coco.names') 
+    num_classes = 1
+    classes = load_classes('data/psp.names') 
 
     #Set up the neural network
     print("Loading network.....")
-    model = Darknet("cfg/yolov3-spp.cfg")
-    model.load_weights("yolov3-spp.weights")
+    model = Darknet("cfg/yolo-psp-single.cfg")
+    #model.load_weights("/home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/models/yolo/01.weights")
+    model.load_weights("/home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/backup/psp/yolo-psp-single_1200.weights")
+
     print("Network successfully loaded")
 
-    model.net_info["height"] = "608"
+    model.net_info["height"] = "416"
     inp_dim = int(model.net_info["height"])
     assert inp_dim % 32 == 0
     assert inp_dim > 32
@@ -84,7 +87,8 @@ if __name__ == '__main__':
     except NameError:
         print("No detections were made")
         exit()
-    print(im_dim_list.shape)
+
+    print(output)
     im_dim_list = torch.index_select(im_dim_list, 0, output[:,0].long())
 
     scaling_factor = torch.min(inp_dim/im_dim_list,1)[0].view(-1,1)
@@ -99,5 +103,14 @@ if __name__ == '__main__':
         output[i, [1,3]] = torch.clamp(output[i, [1,3]], 0.0, im_dim_list[i,0])
         output[i, [2,4]] = torch.clamp(output[i, [2,4]], 0.0, im_dim_list[i,1])
 
-    print(output)
-    print(output.shape)
+    output = output.cpu().numpy()
+    boundingBox = output[0]
+    print(boundingBox)
+    img = cv2.imread(images, 1)
+    cv2.rectangle(img, (boundingBox[2], boundingBox[1]),
+                  (boundingBox[4], boundingBox[3]), (0, 255, 0), 3)
+    wname = images
+    cv2.namedWindow(wname)
+    # Show the image and wait key press
+    cv2.imshow(wname, img)
+    cv2.waitKey()

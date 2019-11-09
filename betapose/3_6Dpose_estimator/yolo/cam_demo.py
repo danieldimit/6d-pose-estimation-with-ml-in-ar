@@ -62,7 +62,7 @@ def arg_parse():
     
     parser = argparse.ArgumentParser(description='YOLO v3 Cam Demo')
     parser.add_argument("--confidence", dest = "confidence", help = "Object Confidence to filter predictions", default = 0.25)
-    parser.add_argument("--nms_thresh", dest = "nms_thresh", help = "NMS Threshhold", default = 0.4)
+    parser.add_argument("--nms_thresh", dest = "nms_thresh", help = "NMS Threshhold", default = 0.1)
     parser.add_argument("--reso", dest = 'reso', help = 
                         "Input resolution of the network. Increase to increase accuracy. Decrease to increase speed",
                         default = "160", type = str)
@@ -71,8 +71,9 @@ def arg_parse():
 
 
 if __name__ == '__main__':
-    cfgfile = "cfg/yolov3-spp.cfg"
-    weightsfile = "yolov3-spp.weights"
+    cfgfile = "cfg/yolo-psp-single.cfg"
+    #weightsfile = "/home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/models/yolo/01.weights"
+    weightsfile = "/home/daniel/Documents/Github/methods_6d_pose_estimation/betapose/3_6Dpose_estimator/train_YOLO/backup/psp/yolo-psp-single_1200.weights"
     num_classes = 80
 
     args = arg_parse()
@@ -116,7 +117,7 @@ if __name__ == '__main__':
             
             img, orig_im, dim = prep_image(frame, inp_dim)
             
-#            im_dim = torch.FloatTensor(dim).repeat(1,2)                        
+            im_dim = torch.FloatTensor(dim).repeat(1,2)                        
             
             
             if CUDA:
@@ -140,17 +141,16 @@ if __name__ == '__main__':
         
             output[:,1:5] = torch.clamp(output[:,1:5], 0.0, float(inp_dim))/inp_dim
             
-#            im_dim = im_dim.repeat(output.size(0), 1)
+            im_dim = im_dim.repeat(output.size(0), 1)
             output[:,[1,3]] *= frame.shape[1]
             output[:,[2,4]] *= frame.shape[0]
 
             
-            classes = load_classes('data/coco.names')
+            classes = load_classes('data/psp.names')
             colors = pkl.load(open("pallete", "rb"))
             
             list(map(lambda x: write(x, orig_im), output))
-            
-            
+
             cv2.imshow("frame", orig_im)
             key = cv2.waitKey(1)
             if key & 0xFF == ord('q'):

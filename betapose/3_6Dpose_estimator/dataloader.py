@@ -781,6 +781,7 @@ class DataWriter:
                             kp_2d = np.delete(kp_2d,delidx, axis=0)
                             kp_3d = np.delete(kp_3d,delidx, axis=0)
                         # embed()
+                        
                         R, t = pnp(kp_3d, kp_2d, self.cam_K)
                         R    = R.T
                         R[1] = -R[1]

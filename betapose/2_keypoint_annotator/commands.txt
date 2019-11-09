@@ -9,7 +9,32 @@ python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1
 python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../psp_base_annotated_ --sixd_base ../psp_base/ --train_split 2000
 
 
-python annotate_keypoint.py --obj_id 1 --total_kp_number 49 --total_obj_number 1 --output_base ../kuka_base_annotated_ --sixd_base ../kuka_base/ --train_split 5500
+python annotate_keypoint.py --obj_id 1 --total_kp_number 51 --total_obj_number 1 --output_base ../kuka_base_annotated_ --sixd_base ../kuka_base/ --train_split 5000
+
+
+
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../kuka_real_full_annotated_ --sixd_base ../kuka_real_small/ --train_split 1
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../kuka_real_far_annotated_ --sixd_base ../kuka_real_far/ --train_split 1 --batch_size 300
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../kuka_real_near_annotated_ --sixd_base ../kuka_real_near/ --train_split 1 --batch_size 300
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../kuka_gen_eval_annotated_ --sixd_base ../kuka_gen_eval/ --train_split 1 --batch_size 300
+
+
+
+
+
+
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../kuka_real_full_annotated_ --sixd_base ../kuka_real/ --train_split 1500
+
+python annotate_keypoint.py --obj_id 1 --total_kp_number 50 --total_obj_number 1 --output_base ../kuka_real_train_annotated_ --sixd_base ../kuka_real_train/ --train_split 780
+
+
+
+
 
 
 python sspdToYoloConverter.py

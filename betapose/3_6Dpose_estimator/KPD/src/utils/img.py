@@ -26,6 +26,7 @@ def torch_to_im(img):
 
 def load_image(img_path):
     # H x W x C => C x H x W
+    print(img_path)
     return im_to_torch(scipy.misc.imread(img_path, mode='RGB'))
 
 

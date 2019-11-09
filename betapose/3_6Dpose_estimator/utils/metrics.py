@@ -116,14 +116,14 @@ def projection_error_2d(gt_pose, est_pose, model, cam):
     est_2d /= est_2d[2, :]
     gt_2d = gt_2d[:2,:].T
     est_2d = est_2d[:2,:].T
-    print(gt_2d.shape)
-    print(est_2d.shape)
-    import matplotlib.pyplot as plt
-    plt.figure()
-    plt.scatter(gt_2d[:,0], gt_2d[:,1], s=1)
-    plt.savefig('gt.png')
-    plt.figure()
-    plt.scatter(est_2d[:,0], est_2d[:,1], s=1)
-    plt.savefig('pred.png')
+
+
+    # import matplotlib.pyplot as plt
+    # plt.figure()
+    # plt.scatter(gt_2d[:,0], gt_2d[:,1], s=1)
+    # plt.savefig('gt.png')
+    # plt.figure()
+    # plt.scatter(est_2d[:,0], est_2d[:,1], s=1)
+    # plt.savefig('pred.png')
 
     return np.mean(np.linalg.norm(gt_2d - est_2d, axis=1))

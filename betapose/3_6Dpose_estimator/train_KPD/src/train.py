@@ -20,6 +20,9 @@ from IPython import embed
 def train(train_loader, m, criterion, optimizer, writer):
     lossLogger = DataLogger()
     accLogger = DataLogger()
+    f = open("acc_loss.csv", "w+")
+    f.write('epoch,acc,loss,eval_acc\n')
+    f.close()
     m.train()
 
     train_loader_desc = tqdm(train_loader)
@@ -175,6 +178,8 @@ def main():
             acc=acc
         ))
 
+
+
         opt.acc = acc
         opt.loss = loss
         m_dev = m.module
@@ -187,7 +192,7 @@ def main():
         #         optimizer, '../exp/{}/{}/optimizer.pkl'.format(opt.dataset, opt.expID))
 
         # if i > 0: # in step1
-        if i > 0 and i % 20 == 0: # in step2 and step3
+        if i > 0 and i % 5 == 0: # in step2 and step3
             loss, acc = valid(val_loader, m, criterion, optimizer, writer)
             torch.save(
                 m_dev.state_dict(), '../exp/{}/{}/model.pkl'.format(opt.dataset, opt.expID))
@@ -208,6 +213,14 @@ def main():
                 torch.save(
                     m_dev.state_dict(), '../exp/{}/{}/model_best.pkl'.format(opt.dataset, opt.expID))
         print('The %d epoch is the best!'%best_epoch, best_valid_acc)
+        f = open("acc_loss.csv", "a+")
+        f.write('{idx:d},{acc:.4f},{loss:.8f},{eval_acc:.4f}\n'.format(
+            idx=opt.epoch,
+            loss=loss,
+            acc=acc,
+            eval_acc=best_valid_acc
+        ))
+        f.close()
         '''
         if opt.dataset != 'mpii':
             with torch.no_grad():

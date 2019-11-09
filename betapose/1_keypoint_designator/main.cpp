@@ -41,13 +41,15 @@ struct SIFTKeypointFieldSelector<PointXYZ> {
 pcl::PointCloud<pcl::PointXYZ>::Ptr extract_sift(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_xyz) {
   // Parameters for sift computation
   // the standard deviation of the smallest scale in the scale space
-  const float min_scale = 0.01f;
+  // psp const float min_scale = 0.01f;
+  const float min_scale = .7f;
   // the number of octaves (i.e. doublings of scale) to compute
   const int n_octaves = 10;
   // the number of scales to compute within each octave
   const int n_scales_per_octave = 5;
   // the minimum contrast required for detection
-  const float min_contrast = 0.05f;
+  // psp const float min_contrast = 0.3f;
+  const float min_contrast = 2.f;
 
   pcl::console::TicToc time;
   time.tic();
