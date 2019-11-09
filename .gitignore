@@ -11,3 +11,4 @@ betapose/1_keypoint_designator/build
 *.json
 *.ply
 .DS_Store
+LINEMOD

@@ -4,8 +4,21 @@ python train.py cfg/psp.data cfg/yolo-pose-pre.cfg backup/benchvise/init.weights
 python train.py cfg/ape.data cfg/yolo-pose.cfg cfg/darknet19_448.conv.23
 
 
+python train.py cfg/kuka.data cfg/yolo-pose.cfg backup/kuka/model98Acc.weights
+
+
+
+
+
+
+
+
 python valid.py cfg/ape.data cfg/yolo-pose.cfg backup/ape/model_backup.weights
 python valid.py cfg/psp.data cfg/yolo-pose.cfg backup/psp/model.weights
+
+
+
+
 
 
 python valid.py cfg/kuka.data cfg/yolo-pose-noanchor.cfg backup/kuka/model.weights
@@ -13,3 +26,17 @@ python valid.py cfg/kuka_real.data cfg/yolo-pose-noanchor.cfg backup/kuka/model.
 python valid.py cfg/kuka_real_far.data cfg/yolo-pose-noanchor.cfg backup/kuka/model.weights
 python valid.py cfg/kuka_real_near.data cfg/yolo-pose-noanchor.cfg backup/kuka/model.weights
 python valid.py cfg/kuka_gen_eval.data cfg/yolo-pose-noanchor.cfg backup/kuka/model.weights
+python valid.py cfg/kuka_gen_manual_lbl.data cfg/yolo-pose-noanchor.cfg backup/kuka/model.weights
+
+
+
+
+
+
+
+
+
+
+
+python valid.py cfg/kuka_real_demo1.data cfg/yolo-pose-noanchor.cfg backup/kuka/model.weights
+python valid.py cfg/kuka_real_demo2.data cfg/yolo-pose-noanchor.cfg backup/kuka/model.weights

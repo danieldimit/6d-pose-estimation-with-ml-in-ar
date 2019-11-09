@@ -1,0 +1,7 @@
+train  = LINEMOD/kuka/train.txt
+valid  = LINEMOD/kuka_gen_manual_lbl/test.txt
+backup = backup/kuka
+mesh = LINEMOD/kuka/kuka.ply
+tr_range = LINEMOD/kuka/training_range.txt
+name = kuka
+diam = 0.6536639

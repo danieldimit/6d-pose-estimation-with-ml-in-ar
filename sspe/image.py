@@ -169,15 +169,15 @@ def change_background(img, mask, bg):
 
 def load_data_detection(imgpath, shape, jitter, hue, saturation, exposure, bgpath):
     labpath = imgpath.replace('images', 'labels').replace('JPEGImages', 'labels').replace('.jpg', '.txt').replace('.png','.txt')
-    maskpath = imgpath.replace('JPEGImages', 'mask').replace('.jpg','.png')
+    #maskpath = imgpath.replace('JPEGImages', 'mask').replace('.jpg','.png')
     #maskpath = imgpath.replace('JPEGImages', 'mask').replace('/00', '/').replace('.jpg', '.png')
-
+    
     ## data augmentation
     img = Image.open(imgpath).convert('RGB')
-    mask = Image.open(maskpath).convert('RGB')
-    bg = Image.open(bgpath).convert('RGB')
+    #mask = Image.open(maskpath).convert('RGB')
+    #bg = Image.open(bgpath).convert('RGB')
     
-    img = change_background(img, mask, bg)
+    #img = change_background(img, mask, bg)
     img,flip,dx,dy,sx,sy = data_augmentation(img, shape, jitter, hue, saturation, exposure)
     ow, oh = img.size
     label = fill_truth_detection(labpath, ow, oh, flip, dx, dy, 1./sx, 1./sy)

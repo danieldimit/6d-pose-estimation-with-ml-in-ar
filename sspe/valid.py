@@ -52,7 +52,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
     notpredicted    = 0 
     conf_thresh     = 0.1
     nms_thresh      = 0.4
-    match_thresh    = 0.5
+    match_thresh    = -1.0
     if save:
         makedirs(backupdir + '/test')
         makedirs(backupdir + '/test/gt')
@@ -161,8 +161,6 @@ def valid(datacfg, cfgfile, weightfile, outfile):
                         box_pr        = boxes[j]
                         best_conf_est = boxes[j][18]
                 
-                print(batch_idx)
-                print("---------")
                 if (best_conf_est  < match_thresh):
                     failed+=1
                     if save:
@@ -192,6 +190,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
                     
                     # Compute [R|t] by pnp
                     R_gt, t_gt = pnp(np.array(np.transpose(np.concatenate((np.zeros((3, 1)), corners3D[:3, :]), axis=1)), dtype='float32'),  corners2D_gt, np.array(internal_calibration, dtype='float32'))
+                    
                     R_pr, t_pr = pnp(np.array(np.transpose(np.concatenate((np.zeros((3, 1)), corners3D[:3, :]), axis=1)), dtype='float32'),  corners2D_pr, np.array(internal_calibration, dtype='float32'))
 
                     if save:
@@ -200,7 +199,7 @@ def valid(datacfg, cfgfile, weightfile, outfile):
                         gts_trans.append(t_gt)
                         preds_rot.append(R_pr)
                         gts_rot.append(R_gt)
-
+                        print("---------")
                         
                         np.savetxt(backupdir + '/test/gt/R_' + format(batch_idx, '04') + '.txt', np.array(R_gt, dtype='float32'))
                         np.savetxt(backupdir + '/test/gt/t_' + format(batch_idx, '04') + '.txt', np.array(t_gt, dtype='float32'))
