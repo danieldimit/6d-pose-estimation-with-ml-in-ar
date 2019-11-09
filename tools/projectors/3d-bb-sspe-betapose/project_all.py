@@ -22,8 +22,8 @@ def printBB():
 
 	image_output_folder = './image_output2/'
 	image_input_folder = './images_input2/'
-	betapose_results = './results/betapose/trd/Betapose-results2.json'
-	sspe_results = './results/sspe/trd/pr2/'
+	betapose_results = './results/betapose/tad/Betapose-results2.json'
+	sspe_results = './results/sspe/tad/pr2/'
 
 	#i_c = np.array([565,0,320,0,605,240,0,0,1]).reshape(3, 3)
 	#i_c = np.array([320., 0.0, 320., 0.0, 320, 240., 0.0, 0.0, 1.0],dtype=float).reshape(3, 3)
@@ -36,6 +36,10 @@ def printBB():
 
 	if not os.path.exists(image_output_folder):
 		os.makedirs(image_output_folder)
+
+	for file in sorted(os.listdir(image_input_folder)):
+		shutil.copy(os.path.join(image_input_folder, file), os.path.join(image_output_folder, file))
+
 
 	# load ply model
 	with open('kuka.ply') as f:
