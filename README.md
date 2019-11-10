@@ -1,6 +1,6 @@
 # Implementation and Evaluation of Deep Learning Approaches for Real-time 3D Robot Localization in an Augmented Reality Use Case
 
-### External tools
+## External links
 * The manual 6D object pose annotation tool - [http://annotate.photo/](http://annotate.photo?ref=github1)
 * [Single Shot Pose Estimation (SSPE)](https://github.com/microsoft/singleshotpose/)
 * [Betapose](https://github.com/sjtuytc/betapose)
