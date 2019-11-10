@@ -1,4 +1,4 @@
-# Evaluation of Deep Learning Approaches for 6D Localization Trained on an Artificial Dataset for an Augmented Reality Use Case
+# Implementation and Evaluation of Deep Learning Approaches for Real-time 3D Robot Localization in an Augmented Reality Use Case
 
 The manual 6D location annotation tool used to create the real datasets is available on [http://annotate.photo/](http://annotate.photo?ref=github1)
 
