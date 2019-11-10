@@ -7,6 +7,11 @@
 * The 5 datasets used for training and evaluation - [Google Drive](https://drive.google.com/open?id=1xiS53HLcr5vGQRmiOt7Yotwso9g-ddht)
 * The weights for SSPE and Betapose - [Google Drive](https://drive.google.com/open?id=1XQGH31AxFJWjLGV19yYY9HBrvVzqMojH)
 
+#### General information
+This project is a fusion of [SSPE](https://github.com/microsoft/singleshotpose/), [Betapose](https://github.com/sjtuytc/betapose) and [Gabriel](https://github.com/cmusatyalab/gabriel). The `betapose` and `sspe` directories are used for training and evaluation. The `tools` directory contrains useful tools like projectors, dataset converters and augmetors as well as PLY-manipulators which are mainly useful for data preparation. The `gabriel` directory contains the [Gabriel](https://github.com/cmusatyalab/gabriel) code base with 2 new proxies (cognitive engines) for Betapose and SSPE.
+
+The programs were run with Nvidia driver 418.87 and CUDA version 10.0. Betapose and SSPE (including their gabriel proxies) were run on Python 3.6.8, while the 2 other servers of Gabriel were run on Python 2.7.16.
+
 #### Speed demo
 
 [![Speed demo](https://img.youtube.com/vi/4mMKnfgYzVU/0.jpg)](https://www.youtube.com/watch?v=4mMKnfgYzVU)
