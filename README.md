@@ -7,7 +7,7 @@
 * [Gabriel](https://github.com/cmusatyalab/gabriel)
 * The 5 datasets used for training and evaluation - [Google Drive](https://drive.google.com/open?id=1xiS53HLcr5vGQRmiOt7Yotwso9g-ddht)
 * The weights for SSPE and Betapose - [Google Drive](https://drive.google.com/open?id=1XQGH31AxFJWjLGV19yYY9HBrvVzqMojH)
-* [Presentation slides](https://drive.google.com/open?id=1bbbv07PCKYgoZUM4EUmJncLuz8X0vKwG) and documentation
+* [Presentation slides](https://drive.google.com/open?id=1bbbv07PCKYgoZUM4EUmJncLuz8X0vKwG) and [documentation](https://drive.google.com/open?id=1tO_l7d1eu-N_9qK5HzfsC3qdeGQWaC-b)
 
 #### General information
 This project is a fusion of [SSPE](https://github.com/microsoft/singleshotpose/), [Betapose](https://github.com/sjtuytc/betapose) and [Gabriel](https://github.com/cmusatyalab/gabriel). The `betapose` and `sspe` directories are used for training and evaluation. The `tools` directory contrains useful tools like projectors, dataset converters and augmetors as well as PLY-manipulators which are mainly useful for data preparation. The `gabriel` directory contains the [Gabriel](https://github.com/cmusatyalab/gabriel) code base with 2 new proxies (cognitive engines) for Betapose and SSPE.
